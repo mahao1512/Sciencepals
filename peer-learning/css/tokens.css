@@ -1,0 +1,105 @@
+/*
+ * tokens.css — Biến giao diện lấy từ trang "Yêu Khoa học" (index.html ở thư mục gốc)
+ * ---------------------------------------------------------------
+ * Trang cũ dùng Tailwind; các giá trị dưới đây là đúng mã màu / cỡ của
+ * những lớp Tailwind trang cũ đang dùng, ghi chú tên lớp gốc bên cạnh.
+ * Mọi file CSS khác chỉ dùng biến, không ghi cứng mã màu.
+ */
+:root {
+  /* Phông chữ — trang cũ: Plus Jakarta Sans 400–800 */
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Màu thương hiệu — tailwind.config "brand" của trang cũ */
+  --brand-50: #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-500: #3b82f6;
+  --brand-600: #2563eb;   /* nút chính: bg-blue-600 */
+  --brand-700: #1d4ed8;   /* tiêu đề logo: text-blue-700 */
+  --brand-400: #60a5fa;   /* tiêu đề logo ở chế độ tối: dark:text-blue-400 */
+
+  /* Thang xám slate */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  /* Ngọn lửa giữ chuỗi — bg-orange-100 / text-orange-600 */
+  --flame-bg: #ffedd5;
+  --flame-fg: #ea580c;
+
+  /* Trạng thái */
+  --danger: #ef4444;      /* text-red-500 */
+  --success: #16a34a;
+  --warn-bg: #fef3c7;
+  --warn-fg: #92400e;
+
+  /* Màu theo ngữ cảnh (đổi ở chế độ tối) */
+  --bg: var(--slate-50);              /* body: bg-slate-50 */
+  --text: var(--slate-800);           /* body: text-slate-800 */
+  --text-strong: var(--slate-900);
+  --text-muted: var(--slate-500);
+  --surface: #ffffff;                 /* thẻ, cửa sổ: bg-white */
+  --surface-2: var(--slate-100);      /* ô nhập, nút phụ: bg-slate-100 */
+  --border: var(--slate-200);
+  --border-strong: var(--slate-300);  /* viền ô nhập: border-slate-300 */
+  --header-bg: rgba(255, 255, 255, .9);
+  --title: var(--brand-700);
+  --overlay: rgba(0, 0, 0, .6);       /* nền mờ cửa sổ: bg-black/60 */
+
+  /* Phòng học vẽ tay — lấy từ bộ asset (nét mực, tường, sàn gỗ) */
+  --ink: #3b2f33;
+  --room-wall: #dbeafe;
+  --room-floor: #dba56c;
+  --room-floor-edge: #b97a45;
+  --room-window: #bfe1ff;
+  --coral: #ef6f5e;
+  --star: #ffd766;
+
+  /* Bo góc — rounded-xl / rounded-2xl / rounded-3xl / rounded-full */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 999px;
+
+  /* Đổ bóng — shadow-sm / shadow-md / shadow-xl */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 8px 10px -6px rgba(0, 0, 0, .1);
+
+  /* Khoảng cách & kích thước */
+  --header-h: 72px;       /* trang cũ h-20 = 80px; rút nhẹ cho điện thoại */
+  --tap: 44px;            /* nút tối thiểu cho ngón tay */
+  --focus: 0 0 0 3px var(--surface), 0 0 0 6px var(--brand-500);  /* focus:ring-2 ring-blue-500 */
+  --dur: .2s;
+}
+
+/* Chế độ tối — trang cũ bật bằng lớp .dark trên <html> */
+:root.dark {
+  --bg: var(--slate-900);
+  --text: var(--slate-100);
+  --text-strong: #ffffff;
+  --text-muted: var(--slate-400);
+  --surface: var(--slate-800);
+  --surface-2: var(--slate-700);
+  --border: var(--slate-700);
+  --border-strong: var(--slate-600);
+  --header-bg: rgba(15, 23, 42, .9);
+  --title: var(--brand-400);
+  --flame-bg: rgba(124, 45, 18, .4);  /* dark:bg-orange-900/40 */
+  --flame-fg: #fdba74;                 /* dark:text-orange-300 */
+  --warn-bg: rgba(146, 64, 14, .35);
+  --warn-fg: #fde68a;
+  --room-wall: #1e3a8a;
+  --room-window: #334e88;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0s; }
+}

@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// Luật bảo mật Firestore cho trang "Học Cùng Bạn".
+// Dán toàn bộ file này vào Firebase Console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function daDangNhap() { return request.auth != null; }
+    function laToi(uid) { return daDangNhap() && request.auth.uid == uid; }
+
+    // ---------- Hồ sơ công khai: ai đã đăng nhập cũng xem được, chỉ chủ tài khoản được sửa ----------
+    // Chỉ có tên hiển thị, nhân vật, bàn học và điểm các môn — không có email hay thông tin cá nhân.
+    match /congKhai/{uid} {
+      allow read: if daDangNhap();
+      allow create, update: if laToi(uid)
+        && request.resource.data.keys().hasOnly(['uid', 'ten', 'nhanVat', 'ban', 'diem', 'manh', 'yeu', 'kiemTraLuc', 'capNhat'])
+        && request.resource.data.uid == uid
+        && request.resource.data.ten is string
+        && request.resource.data.ten.size() >= 2 && request.resource.data.ten.size() <= 24;
+      allow delete: if false;
+    }
+
+    // ---------- Dữ liệu riêng: chỉ chủ tài khoản đọc / ghi ----------
+    match /rieng/{uid} {
+      allow read: if laToi(uid);
+      // Tạo mới: điểm chăm chỉ phải bắt đầu từ 0
+      allow create: if laToi(uid)
+        && request.resource.data.get('diemChamChi', 0) == 0;
+      allow update: if laToi(uid) && diemHopLe();
+      allow delete: if false;
+
+      // Điểm chăm chỉ:
+      //  - Giảm (mua đồ) hoặc giữ nguyên: được, nhưng không được sửa mốc thưởng lần trước.
+      //  - Tăng: tối đa 50 điểm mỗi lần ghi, mốc thưởng phải là giờ máy chủ lúc ghi,
+      //    và phải cách lần thưởng trước ít nhất 55 phút.
+      function diemHopLe() {
+        let cu = resource.data.get('diemChamChi', 0);
+        let moi = request.resource.data.get('diemChamChi', 0);
+        let mocCu = resource.data.get('lanThuongCuoi', 0);
+        let mocMoi = request.resource.data.get('lanThuongCuoi', 0);
+        return moi is int && moi >= 0 && (
+          (moi <= cu && mocMoi == mocCu)
+          || (moi > cu && moi - cu <= 50
+              && mocMoi == request.time
+              && (!(mocCu is timestamp) || request.time >= mocCu + duration.value(55, 'm')))
+        );
+      }
+    }
+
+    // ---------- Sổ tay cảm xúc: mỗi ngày một trang, chỉ chủ tài khoản đọc / ghi ----------
+    match /nhatKy/{uid}/ngay/{ngay} {
+      allow read: if laToi(uid);
+      allow create, update: if laToi(uid)
+        && ngay.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.ngay == ngay
+        && request.resource.data.keys().hasOnly(['ngay', 'cauHoi', 'traLoi', 'daLam', 'chuaLam', 'ngayMai', 'camXuc', 'sticker', 'capNhat'])
+        && request.resource.data.get('traLoi', '').size() <= 3000
+        && request.resource.data.get('daLam', '').size() <= 3000
+        && request.resource.data.get('chuaLam', '').size() <= 3000
+        && request.resource.data.get('ngayMai', '').size() <= 3000
+        && request.resource.data.get('sticker', []).size() <= 15;
+      allow delete: if laToi(uid);
+    }
+
+    // ---------- Lời mời học cùng ----------
+    match /loiMoi/{id} {
+      allow read: if daDangNhap() && (resource.data.den == request.auth.uid || resource.data.tu == request.auth.uid);
+      allow create: if daDangNhap()
+        && request.resource.data.tu == request.auth.uid
+        && request.resource.data.den is string && request.resource.data.den != request.auth.uid
+        && request.resource.data.trangThai == 'cho'
+        && request.resource.data.keys().hasOnly(['tu', 'tenTu', 'den', 'maPhong', 'loai', 'trangThai', 'luc']);
+      // Người được mời chỉ được đổi trạng thái thành "nhận" hoặc "từ chối"
+      allow update: if daDangNhap()
+        && resource.data.den == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trangThai'])
+        && request.resource.data.trangThai in ['nhan', 'tuchoi'];
+      allow delete: if false;
+    }
+
+    // ---------- Tin nhắn bị báo cáo: học sinh chỉ gửi được, không ai đọc được từ trang web ----------
+    // Thầy cô xem trong Firebase Console → Firestore Database → baoCao.
+    match /baoCao/{id} {
+      allow create: if daDangNhap() && request.resource.data.nguoiBao == request.auth.uid;
+      allow read, update, delete: if false;
+    }
+  }
+}
