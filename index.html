@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học Cùng Bạn – Yêu Khoa học</title>
+  <meta name="description" content="Tìm bạn có điểm mạnh bù cho điểm yếu của bạn rồi cùng học trong phòng học ảo.">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/chung.css">
+  <link rel="stylesheet" href="css/trang-chu.css">
+  <script src="assets/peer-assets.js"></script>
+  <script type="module" src="js/trang-chu.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Bỏ qua, tới nội dung chính</a>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="noi-dung" tabindex="-1">
+    <p id="dang-tai" class="center muted" role="status">Đang tải…</p>
+
+    <!-- 1. Đăng nhập (bắt buộc) -->
+    <section id="dang-nhap" class="login-wrap" hidden aria-labelledby="dn-tieu-de"></section>
+
+    <!-- 2. Lần đầu: tạo hồ sơ & nhân vật -->
+    <section id="tao-ho-so" hidden aria-labelledby="th-tieu-de">
+      <div class="card">
+        <h1 id="th-tieu-de" style="font-size:1.5rem">Chào bạn mới! Tạo nhân vật của bạn</h1>
+        <p class="muted" style="margin:4px 0 18px">Nhân vật sẽ ngồi ở bàn học của bạn trong mọi phòng. Bạn có thể sửa lại bất cứ lúc nào ở mục “Nhân vật của tôi”.</p>
+        <div id="th-may-tao"></div>
+      </div>
+    </section>
+
+    <!-- 3. Trang chủ phòng học -->
+    <section id="trang-chu" hidden aria-label="Phòng học của tôi"></section>
+  </main>
+</body>
+</html>
