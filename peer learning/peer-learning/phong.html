@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phòng học – Học Cùng Bạn</title>
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/chung.css">
+  <link rel="stylesheet" href="css/phong.css">
+  <script src="assets/peer-assets.js"></script>
+  <script type="module" src="js/phong.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Bỏ qua, tới nội dung chính</a>
+  <header id="site-header" class="site-header"></header>
+  <main id="noi-dung" tabindex="-1">
+    <p id="p-tai" class="center muted" role="status">Đang vào phòng…</p>
+    <div id="p-loi" hidden></div>
+
+    <div id="p-phong" hidden>
+      <div class="p-dau">
+        <h1 id="p-tieu-de">Phòng học</h1>
+        <div class="p-ma">
+          <span>Mã phòng <b id="p-ma"></b></span>
+          <button class="btn btn-secondary btn-nho" id="p-chep" type="button"><i class="fas fa-copy" aria-hidden="true"></i> Sao chép</button>
+        </div>
+        <button class="btn btn-ghost" id="p-roi" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Rời phòng</button>
+      </div>
+
+      <div class="p-tren">
+        <section class="p-lop" aria-labelledby="p-cho-td">
+          <h2 id="p-cho-td" class="sr-only">Chỗ ngồi trong phòng</h2>
+          <p id="p-trong" class="p-trong" hidden></p>
+          <div class="p-cho" id="p-cho"></div>
+          <fieldset class="p-trang-thai">
+            <legend>Trạng thái của bạn</legend>
+            <div class="opts" id="p-tt"></div>
+          </fieldset>
+        </section>
+
+        <section class="card p-dong-ho" aria-labelledby="dh-td">
+          <h2 id="dh-td"><i class="fas fa-stopwatch" aria-hidden="true"></i> Đồng hồ phòng</h2>
+          <p class="dh-so" id="dh-so" role="timer" aria-live="off">25:00</p>
+          <p class="dh-tt small muted" id="dh-tt" aria-live="polite"></p>
+          <div class="dh-dk" id="dh-dk">
+            <div class="opts" role="group" aria-label="Chọn thời gian">
+              <button class="opt" type="button" data-phut="25">25 phút</button>
+              <button class="opt" type="button" data-phut="45">45 phút</button>
+              <button class="opt" type="button" data-phut="60">60 phút</button>
+            </div>
+            <form class="dh-tu" id="dh-tu" novalidate>
+              <label class="sr-only" for="dh-phut">Tự nhập số phút</label>
+              <input class="input" id="dh-phut" type="number" inputmode="numeric" min="1" max="180" placeholder="Số phút">
+              <button class="btn btn-secondary" type="submit">Đặt</button>
+            </form>
+            <div class="row">
+              <button class="btn btn-primary" type="button" id="dh-chay"><i class="fas fa-play" aria-hidden="true"></i> Bắt đầu</button>
+              <button class="btn btn-secondary" type="button" id="dh-lai"><i class="fas fa-rotate-left" aria-hidden="true"></i> Đặt lại</button>
+            </div>
+          </div>
+          <p class="small muted" id="dh-chi-chu" hidden>Chỉ chủ phòng điều khiển đồng hồ. Mọi người cùng thấy một đồng hồ.</p>
+          <div class="dh-hoc">
+            <p class="small" id="dh-hoc"></p>
+            <div class="dh-hoc-nen" aria-hidden="true"><span id="dh-hoc-thanh"></span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="p-cong-cu">
+        <div class="tabs p-tabs" role="tablist" aria-label="Công cụ trong phòng">
+          <button role="tab" id="tab-tin" aria-controls="pn-tin" aria-selected="true"><i class="fas fa-comments" aria-hidden="true"></i> Trò chuyện <span class="p-moi" id="p-moi" hidden></span></button>
+          <button role="tab" id="tab-bang" aria-controls="pn-bang" aria-selected="false" tabindex="-1"><i class="fas fa-chalkboard" aria-hidden="true"></i> Bảng trắng</button>
+          <button role="tab" id="tab-de" aria-controls="pn-de" aria-selected="false" tabindex="-1"><i class="fas fa-file-lines" aria-hidden="true"></i> Đề bài <span class="p-moi" id="p-de-moi" hidden>mới</span></button>
+        </div>
+
+        <section class="card p-pn hien" id="pn-tin" role="tabpanel" aria-labelledby="tab-tin">
+          <h2 class="p-pn-td">Trò chuyện</h2>
+          <ol class="tin-ds" id="tin-ds" role="log" aria-live="polite" aria-label="Tin nhắn trong phòng"></ol>
+          <form class="tin-gui" id="tin-gui" novalidate>
+            <label class="sr-only" for="tin-o">Viết tin nhắn</label>
+            <input class="input" id="tin-o" maxlength="300" autocomplete="off" placeholder="Nhắn cho cả phòng…">
+            <button class="btn btn-primary" type="submit" aria-label="Gửi tin nhắn"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
+          </form>
+        </section>
+
+        <section class="card p-pn" id="pn-bang" role="tabpanel" aria-labelledby="tab-bang">
+          <h2 class="p-pn-td">Bảng trắng</h2>
+          <div class="bt-cong-cu">
+            <div class="opts" role="radiogroup" aria-label="Màu bút" id="bt-mau"></div>
+            <div class="opts" role="radiogroup" aria-label="Độ dày nét" id="bt-co"></div>
+            <div class="row">
+              <button class="opt" type="button" id="bt-tay" aria-pressed="false"><i class="fas fa-eraser" aria-hidden="true"></i> Tẩy</button>
+              <button class="opt" type="button" id="bt-hoan"><i class="fas fa-rotate-left" aria-hidden="true"></i> Hoàn tác</button>
+              <button class="opt" type="button" id="bt-xoa"><i class="fas fa-trash-can" aria-hidden="true"></i> Xoá bảng</button>
+            </div>
+          </div>
+          <canvas id="bt-canvas" class="bt-canvas" role="img" aria-label="Bảng trắng chung của phòng. Vẽ bằng chuột hoặc ngón tay."></canvas>
+          <p class="small muted">Nét vẽ hiện cho cả phòng khi bạn nhấc tay. “Hoàn tác” chỉ xoá nét của chính bạn.</p>
+        </section>
+
+        <section class="card p-pn p-de" id="pn-de" role="tabpanel" aria-labelledby="tab-de">
+          <div class="de-dau">
+            <h2 class="p-pn-td">Đề bài chung</h2>
+            <div class="row">
+              <button class="btn btn-secondary" type="button" id="de-nut-chup"><i class="fas fa-camera" aria-hidden="true"></i> Chụp đề</button>
+              <button class="btn btn-secondary" type="button" id="de-nut-tai"><i class="fas fa-file-arrow-up" aria-hidden="true"></i> Tải ảnh / PDF</button>
+            </div>
+            <input type="file" id="de-chup" accept="image/*" capture="environment" hidden>
+            <input type="file" id="de-tai" accept="image/*,application/pdf,.pdf" multiple hidden>
+          </div>
+          <p class="small muted" id="de-xu-li" role="status" aria-live="polite"></p>
+          <div id="de-duyet"></div>
+          <div id="de-xem"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+<script>
+    // Mở bằng cách nháy đúp file (file://) thì trình duyệt chặn JavaScript dạng module: báo cách mở đúng
+    if (location.protocol === 'file:') {
+      document.getElementById('noi-dung').innerHTML = '<div class="card" style="max-width:560px;margin:24px auto"><h1 style="font-size:1.3rem">Trang cần mở qua máy chủ</h1><p style="margin-top:8px">Bạn đang mở file trực tiếp nên trình duyệt chặn phần chạy của trang. Hãy mở bằng <b>Live Server</b>: trong VS Code, bấm chuột phải vào <code>peer-learning/index.html</code> → <b>Open with Live Server</b>. Hoặc mở đường link GitHub Pages của trang.</p></div>';
+    }
+  </script>
+  <noscript><p style="padding:16px;text-align:center">Trang cần bật JavaScript để chạy.</p></noscript>
+</body>
+</html>

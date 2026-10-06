@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tìm bạn học – Học Cùng Bạn</title>
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/chung.css">
+  <link rel="stylesheet" href="css/tim-ban.css">
+  <script src="assets/peer-assets.js"></script>
+  <script type="module" src="js/tim-ban.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Bỏ qua, tới nội dung chính</a>
+  <header id="site-header" class="site-header"></header>
+  <main id="noi-dung" tabindex="-1">
+    <div class="tb-dau">
+      <h1>Tìm bạn học bù trừ</h1>
+      <p class="muted">Bạn ấy giỏi môn bạn đang cần, bạn giỏi môn bạn ấy đang cần — cùng học thì cả hai đều tiến bộ.</p>
+    </div>
+    <div id="tb-noi-dung"><p class="muted" role="status">Đang tìm bạn phù hợp…</p></div>
+  </main>
+<script>
+    // Mở bằng cách nháy đúp file (file://) thì trình duyệt chặn JavaScript dạng module: báo cách mở đúng
+    if (location.protocol === 'file:') {
+      document.getElementById('noi-dung').innerHTML = '<div class="card" style="max-width:560px;margin:24px auto"><h1 style="font-size:1.3rem">Trang cần mở qua máy chủ</h1><p style="margin-top:8px">Bạn đang mở file trực tiếp nên trình duyệt chặn phần chạy của trang. Hãy mở bằng <b>Live Server</b>: trong VS Code, bấm chuột phải vào <code>peer-learning/index.html</code> → <b>Open with Live Server</b>. Hoặc mở đường link GitHub Pages của trang.</p></div>';
+    }
+  </script>
+  <noscript><p style="padding:16px;text-align:center">Trang cần bật JavaScript để chạy.</p></noscript>
+</body>
+</html>
