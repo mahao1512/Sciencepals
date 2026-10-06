@@ -1,5 +1,5 @@
 {
-  "_huong_dan": "Mỗi môn là một cuốn sách trên tủ. 'href' để trống \"\" thì sách mờ đi và hiện 'Sắp có'. 'spine' là chữ ngắn in trên gáy sách. 'kiemTra' là mã môn trong data/de-mau.json (để trống nếu môn không có trong bài kiểm tra). Tủ sách chứa tối đa 9 cuốn.",
+  "_huong_dan": "Mỗi môn là một cuốn sách trên tủ. 'href' để trống \"\" thì sách mờ đi và hiện 'Sắp có'. 'spine' là chữ ngắn in trên gáy sách. 'kiemTra' là mã môn trong data/de-mau.json (để trống nếu môn không có trong bài kiểm tra). Tủ sách chứa tối đa 9 cuốn: tối đa 8 môn ở đây, cuốn thứ 9 luôn là 'Sổ tay cảm xúc'.",
   "monHoc": [
     { "id": "toan", "name": "Toán", "spine": "Toán", "color": "#e2504c", "href": "", "kiemTra": "toan" },
     { "id": "ly-mo-phong", "name": "Vật lí mô phỏng", "spine": "Lí mô phỏng", "color": "#4f8fd8", "href": "https://ai.studio/apps/7e646bce-2d9b-4cdb-8b44-3e9b9481f6cf?fullscreenApplet=true", "kiemTra": "ly" },

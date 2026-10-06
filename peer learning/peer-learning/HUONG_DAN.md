@@ -134,6 +134,18 @@ Nội dung trò chuyện nằm ở **Realtime Database → Data → phong → (m
 - PDF được đọc bằng thư viện pdf.js, tải từ cdnjs khi có người chọn file PDF.
 - Mỗi lần có người vào phòng là một lần tải đề về máy. Với gói miễn phí (10 GB tải về mỗi tháng), một đề 10 trang khoảng 2,5 MB nên đủ cho vài nghìn lượt vào phòng mỗi tháng. Xem mức dùng ở **Realtime Database → Usage**.
 
+## Thú ảo và Sổ tay cảm xúc
+
+- **Thú ảo** đi dạo trên mọi trang: rê chuột hoặc ngón tay lại gần thì thú chạy theo; bấm vào thú thì nó nhảy lên và kể một điều thú vị; kéo thả để bế thú đi chỗ khác. Nút 🐾 ở góc dưới bên trái để chọn thú, cho ăn, vuốt ve, ẩn hoặc hiện thú.
+- Có 11 thú. Gà Con có sẵn; các thú khác mở khoá khi chuỗi ngày (chuỗi hiện tại hoặc chuỗi dài nhất) đạt 10, 20, 30, …, 100 ngày.
+- Thú đang chọn và độ no, độ vui **lưu trên từng máy** (đổi máy thì thú về mặc định, nhưng thú đã mở khoá vẫn giữ nguyên vì tính theo chuỗi).
+- **Sổ tay cảm xúc** là cuốn sách hồng ở ngăn cuối tủ sách (trên điện thoại: chạm vào tủ sách để mở tủ lớn rồi chọn cuốn sổ). Mỗi ngày một trang gồm: câu hỏi định hướng của ngày (cảm xúc, sở thích, hướng nghiệp), điều đã làm được, điều chưa làm được, ngày mai mình sẽ…, cảm xúc trong ngày và sticker.
+- Mỗi thú có 5 sticker cảm xúc (Vui quá, Buồn xíu, Mệt rồi, Thương mình, Cố lên), dùng được khi đã mở khoá thú đó. Mỗi trang dán tối đa 15 sticker.
+- Nút **📅 100 ngày** mở trang tổng hợp 100 ngày gần nhất; chạm một ngày để mở lại trang đó.
+- Nhật ký **chỉ chủ tài khoản đọc được**, kể cả các bạn trong phòng học. Thầy cô cũng không xem được từ trang web. Trong Firebase Console, người quản lí dự án vẫn thấy được dữ liệu, nên hãy nói trước với học sinh điều này.
+
+> **Đã dán luật Firestore từ trước?** Hãy dán lại toàn bộ `firestore.rules` và bấm **Publish**, vì luật mới có thêm phần sổ tay (`nhatKy`). Thiếu bước này, sổ tay sẽ báo *"Chưa mở được sổ tay"*.
+
 ## Những chỗ bạn có thể tự sửa
 
 | Muốn | Sửa file |
@@ -142,6 +154,8 @@ Nội dung trò chuyện nằm ở **Realtime Database → Data → phong → (m
 | Thêm câu hỏi kiểm tra | `data/de-mau.json` (thêm vào mảng `questions` của môn; mỗi lần làm sẽ bốc ngẫu nhiên 10 câu) |
 | Đổi 60 phút / 50 điểm, ngưỡng hiện ngọn lửa | `js/config.js` (nhớ sửa cả số `50` và `55` trong `firestore.rules` cho khớp) |
 | Thêm từ cấm trong trò chuyện | `js/loc-tu.js` |
+| Đổi thú ảo, mốc mở khoá, 5 cảm xúc sticker | `js/thu-cung.js` |
+| Thêm câu hỏi định hướng cho sổ tay | `js/ui/so-tay.js` (danh sách `CAU_HOI`) |
 | Thêm bàn, phụ kiện, màu tóc | `assets/peer-assets.js`, thêm theo khuôn các mục có sẵn |
 
 ---

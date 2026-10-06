@@ -131,6 +131,20 @@ export function theoDoiRieng(f) {
   return nghe('rieng:' + uid, async () => f(await layRieng()));
 }
 
+/* ---------- Sổ tay cảm xúc (riêng tư, chỉ chủ tài khoản) ---------- */
+const khoaNhatKy = () => 'pl_nhatky_' + uidHienTai;
+/** Các trang nhật ký từ ngày `tu` (YYYY-MM-DD) trở đi: { 'YYYY-MM-DD': trang } */
+export async function docNhatKy(tu) {
+  const tat = doc(khoaNhatKy(), {});
+  return Object.fromEntries(Object.entries(tat).filter(([ngay]) => ngay >= tu));
+}
+export async function ghiNhatKy(ngay, trang) {
+  const tat = doc(khoaNhatKy(), {});
+  tat[ngay] = { ...trang, ngay, capNhat: Date.now() };
+  try { ghi(khoaNhatKy(), tat); }
+  catch (e) { throw new Error('Bộ nhớ của chế độ thử đã đầy, chưa lưu được trang này.'); }
+}
+
 /* ---------- Lời mời ---------- */
 const HAN_LOI_MOI = 2 * 60 * 60 * 1000; // lời mời quá 2 giờ thì bỏ
 export async function guiLoiMoi({ den, maPhong, loai }) {

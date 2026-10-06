@@ -13,7 +13,17 @@ export function ngayHomTruoc(ymd) {
   const t = new Date(Date.UTC(y, m - 1, d - 1));
   return t.toISOString().slice(0, 10);
 }
-const fmtGio = new Intl.DateTimeFormat('vi-VN', { timeZone: MUI_GIO, hour: '2-digit', minute: '2-digit' });
+/** Cộng / trừ `n` ngày cho chuỗi YYYY-MM-DD. */
+export function ngayCong(ymd, n) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+/** Số ngày từ `a` tới `b` (YYYY-MM-DD). */
+export function soNgay(a, b) {
+  const t = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+  return Math.round((t(b) - t(a)) / 864e5);
+}
+const fmtGio =new Intl.DateTimeFormat('vi-VN', { timeZone: MUI_GIO, hour: '2-digit', minute: '2-digit' });
 /** Giờ:phút theo giờ Việt Nam. */
 export const gioVN = (ms) => fmtGio.format(new Date(ms));
 
@@ -22,6 +32,15 @@ export async function taiJSON(duongDan) {
   const r = await fetch(duongDan, { cache: 'no-cache' });
   if (!r.ok) throw new Error('Không tải được ' + duongDan);
   return r.json();
+}
+
+/** Nạp thêm một file CSS (một lần) — dùng cho tính năng mở thêm như thú ảo, sổ tay. */
+export function napCss(href) {
+  if (document.querySelector(`link[href="${href}"]`)) return;
+  const l = document.createElement('link');
+  l.rel = 'stylesheet';
+  l.href = href;
+  document.head.appendChild(l);
 }
 
 /* ---------- Thông báo nổi ---------- */

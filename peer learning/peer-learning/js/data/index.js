@@ -17,7 +17,10 @@
  *                                         lanThuongCuoi, soHuu, kiemTra }
  *   layRieng()  luuRieng(phan)  theoDoiRieng(f)
  *
- *   Lời mời: { id, tu, tenTu, den, maPhong, loai, trangThai: 'cho'|'nhan'|'tuchoi', luc }
+ *   Sổ tay cảm xúc (riêng tư): trang = { ngay, cauHoi, traLoi, daLam, chuaLam, ngayMai, camXuc, sticker: [{ p, e, x, y, r }] }
+ *   docNhatKy(tuNgay) → { 'YYYY-MM-DD': trang }      ghiNhatKy(ngay, trang)
+ *
+ *   Lời mời:{ id, tu, tenTu, den, maPhong, loai, trangThai: 'cho'|'nhan'|'tuchoi', luc }
  *   guiLoiMoi({ den, maPhong, loai }) → id
  *   theoDoiLoiMoi(f)            f(danhSách lời mời gửi tới tôi hoặc do tôi gửi) → hàm huỷ
  *   traLoiLoiMoi(id, dongY)

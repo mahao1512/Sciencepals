@@ -41,7 +41,7 @@ export async function veTrangChu(el, ctx) {
     // Điện thoại: sách quá nhỏ để bấm, nên chạm vào tủ sẽ mở tủ sách cỡ lớn
     `<button type="button" class="room-shelf-mo" id="mo-tu-sach" aria-label="Mở tủ sách trò chơi các môn"></button>` +
     `</div>` +
-    `<p class="room-goi-y small muted">Bấm vào sách để mở trò chơi của môn đó · bấm bàn để vào cửa hàng · bấm nhân vật để thay đổi diện mạo.</p>` +
+    `<p class="room-goi-y small muted">Bấm vào sách để mở trò chơi của môn đó · cuốn hồng là Sổ tay cảm xúc · bấm bàn để vào cửa hàng · bấm nhân vật để thay đổi diện mạo.</p>` +
     `<nav class="hanh-dong" aria-label="Học cùng bạn bè">` +
     `<a class="btn btn-primary hd-nut" href="tim-ban.html"><i class="fas fa-user-group" aria-hidden="true"></i><span>Tìm bạn học<small>Bạn giỏi môn bạn cần</small></span></a>` +
     `<button type="button" class="btn btn-primary hd-nut" id="nut-hoc-doi"><i class="fas fa-people-arrows" aria-hidden="true"></i><span>Học cùng bạn<small>Phòng 2 người</small></span></button>` +
@@ -63,10 +63,21 @@ export async function veTrangChu(el, ctx) {
   const tu = el.querySelector('#tu-sach');
   try {
     const mon = await layMonHoc();
-    const svg = PeerAssets.renderBookshelf(mon.map((m) => ({ id: m.id, name: m.name, spine: m.spine, color: m.color, href: m.href })));
-    const ganSapCo = (vung) => vung.querySelectorAll('.pa-book--sap-co').forEach((b) => b.addEventListener('click', () => {
-      thongBao(`Trò chơi môn ${esc(b.querySelector('title').textContent.replace(' (sắp có)', ''))} sắp có. Bạn thử môn khác trước nhé!`);
-    }));
+    // Tủ chứa tối đa 9 cuốn: các môn trong mon-hoc.json + cuốn "Sổ tay cảm xúc" ở cuối
+    const sach = mon.slice(0, 8).map((m) => ({ id: m.id, name: m.name, spine: m.spine, color: m.color, href: m.href }));
+    sach.push({ id: 'so-tay', name: 'Sổ tay cảm xúc', spine: 'Sổ tay 💗', color: '#f472b6', href: '#so-tay' });
+    const svg = PeerAssets.renderBookshelf(sach).replace('aria-label="Mở trò chơi môn Sổ tay cảm xúc"', 'aria-label="Mở Sổ tay cảm xúc"');
+    const ganSapCo = (vung) => {
+      vung.querySelectorAll('.pa-book--sap-co').forEach((b) => b.addEventListener('click', () => {
+        thongBao(`Trò chơi môn ${esc(b.querySelector('title').textContent.replace(' (sắp có)', ''))} sắp có. Bạn thử môn khác trước nhé!`);
+      }));
+      // Cuốn sổ tay mở ngay trên trang, không mở tab mới
+      vung.querySelectorAll('[data-subject="so-tay"]').forEach((b) => b.addEventListener('click', async (e) => {
+        e.preventDefault();
+        b.closest('dialog')?.close();
+        (await import('./so-tay.js')).moSoTay(ctx);
+      }));
+    };
     tu.innerHTML = svg;
     ganSapCo(tu);
     // Màn hẹp: sách nhỏ trong phòng chỉ để nhìn, bỏ khỏi thứ tự phím Tab (đã có nút mở tủ lớn)

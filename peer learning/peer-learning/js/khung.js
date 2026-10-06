@@ -153,7 +153,9 @@ export async function taiNguCanh(uid, congKhai) {
     };
   }
   // Theo dõi điểm chăm chỉ thay đổi ở tab khác / máy khác
-  duLieu.theoDoiRieng((r) => { ctx.rieng = r; capNhatDauTrang(ctx); });
+  duLieu.theoDoiRieng((r) => { ctx.rieng = r; capNhatDauTrang(ctx); document.dispatchEvent(new CustomEvent('pl:rieng')); });
+  // Thú ảo đi dạo trên mọi trang
+  import('./ui/thu-ao.js').then((m) => m.khoiTaoThuAo(ctx)).catch((e) => console.warn('Thú ảo chưa chạy được:', e));
   // Lời mời học cùng hiện trên mọi trang
   if (duLieu.theoDoiLoiMoi) (await import('./ui/loi-moi.js')).ganLoiMoi(ctx);
   return ctx;

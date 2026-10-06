@@ -144,6 +144,18 @@ export function theoDoiRieng(f) {
   return onSnapshot(doc(fs, 'rieng', uidToi()), (s) => f({ ...riengMacDinh(), ...(s.data() || {}) }), () => {});
 }
 
+/* ---------- Sổ tay cảm xúc (Firestore: nhatKy/{uid}/ngay/{YYYY-MM-DD}) — chỉ chủ tài khoản đọc / ghi ---------- */
+const TRUONG_NHAT_KY = ['cauHoi', 'traLoi', 'daLam', 'chuaLam', 'ngayMai', 'camXuc', 'sticker'];
+export async function docNhatKy(tu) {
+  const s = await getDocs(query(collection(fs, 'nhatKy', uidToi(), 'ngay'), where('ngay', '>=', tu)));
+  return Object.fromEntries(s.docs.map((d) => [d.id, d.data()]));
+}
+export async function ghiNhatKy(ngay, trang) {
+  const sach = { ngay, capNhat: serverTimestamp() };
+  TRUONG_NHAT_KY.forEach((k) => { if (trang[k] !== undefined) sach[k] = trang[k]; });
+  await setDoc(doc(fs, 'nhatKy', uidToi(), 'ngay', ngay), sach);
+}
+
 /* ---------- Lời mời (Firestore: loiMoi/{id}) ---------- */
 const HAN_LOI_MOI = 2 * 60 * 60 * 1000;
 export async function guiLoiMoi({ den, maPhong, loai }) {
