@@ -1,0 +1,1046 @@
+{
+  "meta": {
+    "title": "Bài kiểm tra đầu vào – xác định điểm mạnh, điểm yếu",
+    "grade": 12,
+    "curriculum": "Chương trình giáo dục phổ thông 2018, mức độ cơ bản",
+    "questionsPerSubject": 10,
+    "format": "Mỗi câu có 4 phương án trong 'options'; 'answer' là vị trí của đáp án đúng, đếm từ 0 (0 = A, 1 = B, 2 = C, 3 = D).",
+    "levels": {
+      "1": "Nhận biết",
+      "2": "Thông hiểu",
+      "3": "Vận dụng"
+    },
+    "scoring": {
+      "pointsPerCorrect": 1,
+      "maxPerSubject": 10,
+      "strongFrom": 8,
+      "weakUpTo": 5,
+      "fallback": "Nếu không môn nào đạt ngưỡng mạnh (hoặc yếu), lấy 2 môn điểm cao nhất làm điểm mạnh (2 môn điểm thấp nhất làm điểm yếu)."
+    },
+    "note": "Công thức viết bằng kí tự Unicode thường (x², ∫₀¹, H₂O), hiển thị trực tiếp không cần MathJax. Nên xáo trộn thứ tự phương án khi hiển thị và đối chiếu lại với sách giáo khoa đang dùng trước khi cho học sinh làm."
+  },
+  "subjects": [
+    {
+      "id": "toan",
+      "name": "Toán",
+      "questions": [
+        {
+          "id": "toan-01",
+          "topic": "Tính đơn điệu của hàm số",
+          "level": 1,
+          "question": "Hàm số y = x³ − 3x nghịch biến trên khoảng nào dưới đây?",
+          "options": [
+            "(−∞; −1)",
+            "(−1; 1)",
+            "(1; +∞)",
+            "(−∞; +∞)"
+          ],
+          "answer": 1,
+          "explanation": "y' = 3x² − 3 < 0 khi −1 < x < 1 nên hàm số nghịch biến trên (−1; 1)."
+        },
+        {
+          "id": "toan-02",
+          "topic": "Cực trị của hàm số",
+          "level": 1,
+          "question": "Hàm số y = x³ − 3x² + 2 đạt cực tiểu tại điểm",
+          "options": [
+            "x = −2",
+            "x = 0",
+            "x = 1",
+            "x = 2"
+          ],
+          "answer": 3,
+          "explanation": "y' = 3x² − 6x = 0 khi x = 0 hoặc x = 2. y' đổi dấu từ âm sang dương khi qua x = 2 nên hàm số đạt cực tiểu tại x = 2."
+        },
+        {
+          "id": "toan-03",
+          "topic": "Giá trị lớn nhất, nhỏ nhất",
+          "level": 2,
+          "question": "Giá trị lớn nhất của hàm số y = x³ − 3x + 1 trên đoạn [0; 2] bằng",
+          "options": [
+            "3",
+            "1",
+            "−1",
+            "5"
+          ],
+          "answer": 0,
+          "explanation": "y' = 0 khi x = 1 (thuộc đoạn). y(0) = 1, y(1) = −1, y(2) = 3. Giá trị lớn nhất là 3."
+        },
+        {
+          "id": "toan-04",
+          "topic": "Đường tiệm cận",
+          "level": 2,
+          "question": "Đồ thị hàm số y = (2x + 1)/(x − 1) có tiệm cận ngang là đường thẳng",
+          "options": [
+            "x = 1",
+            "y = 1",
+            "y = 2",
+            "x = 2"
+          ],
+          "answer": 2,
+          "explanation": "Khi x → ±∞ thì y → 2 nên tiệm cận ngang là y = 2 (x = 1 là tiệm cận đứng)."
+        },
+        {
+          "id": "toan-05",
+          "topic": "Nguyên hàm",
+          "level": 1,
+          "question": "Họ nguyên hàm của hàm số f(x) = 3x² + 2x là",
+          "options": [
+            "6x + 2 + C",
+            "x³ + x² + C",
+            "x³ + 2x² + C",
+            "3x³ + 2x² + C"
+          ],
+          "answer": 1,
+          "explanation": "∫(3x² + 2x) dx = x³ + x² + C."
+        },
+        {
+          "id": "toan-06",
+          "topic": "Tích phân",
+          "level": 2,
+          "question": "Giá trị của tích phân ∫₀¹ (2x + 1) dx bằng",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "∫₀¹ (2x + 1) dx = (x² + x) tính từ 0 đến 1 = 2."
+        },
+        {
+          "id": "toan-07",
+          "topic": "Ứng dụng của tích phân",
+          "level": 2,
+          "question": "Diện tích hình phẳng giới hạn bởi đồ thị hàm số y = x², trục hoành và hai đường thẳng x = 0, x = 3 bằng",
+          "options": [
+            "9",
+            "27",
+            "3",
+            "6"
+          ],
+          "answer": 0,
+          "explanation": "S = ∫₀³ x² dx = x³/3 tính từ 0 đến 3 = 9."
+        },
+        {
+          "id": "toan-08",
+          "topic": "Toạ độ trong không gian",
+          "level": 1,
+          "question": "Trong không gian Oxyz, cho hai điểm A(1; 2; 3) và B(3; 0; 1). Trung điểm của đoạn thẳng AB có toạ độ là",
+          "options": [
+            "(4; 2; 4)",
+            "(2; −2; −2)",
+            "(1; −1; −1)",
+            "(2; 1; 2)"
+          ],
+          "answer": 3,
+          "explanation": "Toạ độ trung điểm bằng trung bình cộng toạ độ hai đầu mút: ((1+3)/2; (2+0)/2; (3+1)/2) = (2; 1; 2)."
+        },
+        {
+          "id": "toan-09",
+          "topic": "Phương trình mặt phẳng",
+          "level": 2,
+          "question": "Trong không gian Oxyz, mặt phẳng đi qua điểm M(1; −2; 3) và nhận n = (2; 1; −1) làm vectơ pháp tuyến có phương trình là",
+          "options": [
+            "2x + y − z − 3 = 0",
+            "2x + y − z + 3 = 0",
+            "x − 2y + 3z + 3 = 0",
+            "2x + y − z = 0"
+          ],
+          "answer": 1,
+          "explanation": "2(x − 1) + (y + 2) − (z − 3) = 0 ⇔ 2x + y − z + 3 = 0."
+        },
+        {
+          "id": "toan-10",
+          "topic": "Xác suất có điều kiện",
+          "level": 3,
+          "question": "Một lớp có 60% học sinh nữ. Biết 30% học sinh nữ và 20% học sinh nam tham gia câu lạc bộ Toán. Chọn ngẫu nhiên một học sinh của lớp, xác suất để học sinh đó tham gia câu lạc bộ Toán là",
+          "options": [
+            "0,50",
+            "0,25",
+            "0,24",
+            "0,26"
+          ],
+          "answer": 3,
+          "explanation": "Công thức xác suất toàn phần: 0,6 × 0,3 + 0,4 × 0,2 = 0,18 + 0,08 = 0,26."
+        }
+      ]
+    },
+    {
+      "id": "ly",
+      "name": "Vật lí",
+      "questions": [
+        {
+          "id": "ly-01",
+          "topic": "Sự chuyển thể",
+          "level": 1,
+          "question": "Quá trình chuyển từ thể rắn sang thể lỏng của một chất được gọi là",
+          "options": [
+            "sự nóng chảy",
+            "sự đông đặc",
+            "sự hoá hơi",
+            "sự ngưng tụ"
+          ],
+          "answer": 0,
+          "explanation": "Rắn → lỏng là sự nóng chảy; quá trình ngược lại là sự đông đặc."
+        },
+        {
+          "id": "ly-02",
+          "topic": "Thang nhiệt độ",
+          "level": 1,
+          "question": "Nhiệt độ 27 °C ứng với nhiệt độ nào trong thang Kelvin (lấy T = t + 273)?",
+          "options": [
+            "246 K",
+            "300 K",
+            "327 K",
+            "27 K"
+          ],
+          "answer": 1,
+          "explanation": "T = 27 + 273 = 300 K."
+        },
+        {
+          "id": "ly-03",
+          "topic": "Nhiệt dung riêng",
+          "level": 2,
+          "question": "Nhiệt lượng cần cung cấp để 2 kg nước tăng nhiệt độ từ 20 °C lên 70 °C là bao nhiêu? Biết nhiệt dung riêng của nước là 4200 J/(kg·K).",
+          "options": [
+            "84 kJ",
+            "210 kJ",
+            "420 kJ",
+            "588 kJ"
+          ],
+          "answer": 2,
+          "explanation": "Q = mcΔt = 2 × 4200 × (70 − 20) = 420 000 J = 420 kJ."
+        },
+        {
+          "id": "ly-04",
+          "topic": "Định luật Boyle",
+          "level": 1,
+          "question": "Theo định luật Boyle, khi nhiệt độ của một khối lượng khí xác định không đổi thì áp suất của khí",
+          "options": [
+            "tỉ lệ thuận với thể tích",
+            "không phụ thuộc vào thể tích",
+            "tỉ lệ thuận với bình phương thể tích",
+            "tỉ lệ nghịch với thể tích"
+          ],
+          "answer": 3,
+          "explanation": "Quá trình đẳng nhiệt: pV = hằng số, nên p tỉ lệ nghịch với V."
+        },
+        {
+          "id": "ly-05",
+          "topic": "Định luật Boyle",
+          "level": 2,
+          "question": "Một lượng khí có thể tích 6 lít ở áp suất 2 atm. Nén đẳng nhiệt lượng khí đó đến thể tích 3 lít thì áp suất của khí là",
+          "options": [
+            "1 atm",
+            "4 atm",
+            "6 atm",
+            "12 atm"
+          ],
+          "answer": 1,
+          "explanation": "p₁V₁ = p₂V₂ ⇒ p₂ = 2 × 6 / 3 = 4 atm."
+        },
+        {
+          "id": "ly-06",
+          "topic": "Định luật I nhiệt động lực học",
+          "level": 2,
+          "question": "Một khối khí nhận nhiệt lượng 100 J và thực hiện công 40 J lên môi trường xung quanh. Độ biến thiên nội năng của khối khí là",
+          "options": [
+            "140 J",
+            "−60 J",
+            "60 J",
+            "40 J"
+          ],
+          "answer": 2,
+          "explanation": "ΔU = Q + A với Q = +100 J (nhận nhiệt), A = −40 J (thực hiện công) nên ΔU = 60 J."
+        },
+        {
+          "id": "ly-07",
+          "topic": "Từ trường",
+          "level": 1,
+          "question": "Trong hệ SI, đơn vị của cảm ứng từ là",
+          "options": [
+            "tesla (T)",
+            "weber (Wb)",
+            "henry (H)",
+            "ampe (A)"
+          ],
+          "answer": 0,
+          "explanation": "Cảm ứng từ B đo bằng tesla (T). Weber là đơn vị từ thông, henry là đơn vị độ tự cảm."
+        },
+        {
+          "id": "ly-08",
+          "topic": "Lực từ",
+          "level": 2,
+          "question": "Một đoạn dây dẫn thẳng dài 0,1 m mang dòng điện 2 A đặt vuông góc với các đường sức của từ trường đều có cảm ứng từ 0,5 T. Lực từ tác dụng lên đoạn dây có độ lớn là",
+          "options": [
+            "1 N",
+            "0,01 N",
+            "10 N",
+            "0,1 N"
+          ],
+          "answer": 3,
+          "explanation": "F = BIL sin 90° = 0,5 × 2 × 0,1 = 0,1 N."
+        },
+        {
+          "id": "ly-09",
+          "topic": "Cấu tạo hạt nhân",
+          "level": 1,
+          "question": "Hạt nhân uranium ²³⁵U (có Z = 92) chứa bao nhiêu neutron?",
+          "options": [
+            "92",
+            "235",
+            "143",
+            "327"
+          ],
+          "answer": 2,
+          "explanation": "Số neutron N = A − Z = 235 − 92 = 143."
+        },
+        {
+          "id": "ly-10",
+          "topic": "Phóng xạ",
+          "level": 2,
+          "question": "Một chất phóng xạ có chu kì bán rã 8 ngày. Ban đầu có 100 g chất này, sau 24 ngày khối lượng chất phóng xạ còn lại là",
+          "options": [
+            "12,5 g",
+            "25 g",
+            "50 g",
+            "33,3 g"
+          ],
+          "answer": 0,
+          "explanation": "24 ngày = 3 chu kì bán rã nên còn lại 100 / 2³ = 12,5 g."
+        }
+      ]
+    },
+    {
+      "id": "hoa",
+      "name": "Hoá học",
+      "questions": [
+        {
+          "id": "hoa-01",
+          "topic": "Ester",
+          "level": 1,
+          "question": "Công thức của ethyl acetate là",
+          "options": [
+            "HCOOCH₃",
+            "CH₃COOCH₃",
+            "CH₃COOC₂H₅",
+            "C₂H₅COOCH₃"
+          ],
+          "answer": 2,
+          "explanation": "Ethyl acetate tạo bởi acetic acid (CH₃COOH) và ethanol (C₂H₅OH): CH₃COOC₂H₅."
+        },
+        {
+          "id": "hoa-02",
+          "topic": "Carbohydrate",
+          "level": 1,
+          "question": "Chất nào sau đây thuộc loại monosaccharide?",
+          "options": [
+            "Saccharose",
+            "Glucose",
+            "Tinh bột",
+            "Cellulose"
+          ],
+          "answer": 1,
+          "explanation": "Glucose là monosaccharide; saccharose là disaccharide; tinh bột và cellulose là polysaccharide."
+        },
+        {
+          "id": "hoa-03",
+          "topic": "Lipid",
+          "level": 2,
+          "question": "Thuỷ phân hoàn toàn chất béo trong dung dịch NaOH (phản ứng xà phòng hoá) thu được muối của acid béo và",
+          "options": [
+            "ethanol",
+            "ethylene glycol",
+            "methanol",
+            "glycerol"
+          ],
+          "answer": 3,
+          "explanation": "Chất béo là triester của glycerol với acid béo nên xà phòng hoá cho muối của acid béo và glycerol."
+        },
+        {
+          "id": "hoa-04",
+          "topic": "Amine",
+          "level": 1,
+          "question": "Chất nào sau đây là amine bậc một?",
+          "options": [
+            "C₂H₅NH₂",
+            "CH₃NHCH₃",
+            "(CH₃)₃N",
+            "C₆H₅NHCH₃"
+          ],
+          "answer": 0,
+          "explanation": "Amine bậc một có nhóm −NH₂ (một nguyên tử H của NH₃ được thay bằng gốc hydrocarbon)."
+        },
+        {
+          "id": "hoa-05",
+          "topic": "Amine, amino acid",
+          "level": 2,
+          "question": "Dung dịch chất nào sau đây làm quỳ tím chuyển sang màu xanh?",
+          "options": [
+            "Glycine",
+            "Aniline",
+            "Acetic acid",
+            "Methylamine"
+          ],
+          "answer": 3,
+          "explanation": "Methylamine có tính base đủ mạnh để làm xanh quỳ tím. Aniline có tính base rất yếu và glycine trung tính nên không đổi màu quỳ; acetic acid làm quỳ hoá đỏ."
+        },
+        {
+          "id": "hoa-06",
+          "topic": "Polymer",
+          "level": 1,
+          "question": "Polymer nào sau đây được điều chế bằng phản ứng trùng ngưng?",
+          "options": [
+            "Polyethylene (PE)",
+            "Nylon-6,6",
+            "Poly(vinyl chloride) (PVC)",
+            "Polystyrene (PS)"
+          ],
+          "answer": 1,
+          "explanation": "Nylon-6,6 được trùng ngưng từ hexamethylenediamine và adipic acid. PE, PVC, PS được điều chế bằng phản ứng trùng hợp."
+        },
+        {
+          "id": "hoa-07",
+          "topic": "Pin điện hoá",
+          "level": 2,
+          "question": "Trong pin điện hoá Zn–Cu, quá trình xảy ra ở cực âm (anode) là",
+          "options": [
+            "Cu²⁺ + 2e → Cu",
+            "Cu → Cu²⁺ + 2e",
+            "Zn → Zn²⁺ + 2e",
+            "Zn²⁺ + 2e → Zn"
+          ],
+          "answer": 2,
+          "explanation": "Zn có tính khử mạnh hơn Cu nên là cực âm, tại đó Zn bị oxi hoá: Zn → Zn²⁺ + 2e."
+        },
+        {
+          "id": "hoa-08",
+          "topic": "Đại cương kim loại",
+          "level": 1,
+          "question": "Kim loại nào sau đây dẫn điện tốt nhất?",
+          "options": [
+            "Ag",
+            "Cu",
+            "Al",
+            "Fe"
+          ],
+          "answer": 0,
+          "explanation": "Thứ tự dẫn điện giảm dần: Ag > Cu > Au > Al > Fe."
+        },
+        {
+          "id": "hoa-09",
+          "topic": "Kim loại nhóm IA",
+          "level": 2,
+          "question": "Kim loại nào sau đây tác dụng mạnh với nước ở nhiệt độ thường?",
+          "options": [
+            "Fe",
+            "Cu",
+            "Na",
+            "Ag"
+          ],
+          "answer": 2,
+          "explanation": "Na là kim loại kiềm, phản ứng mạnh với nước ở nhiệt độ thường: 2Na + 2H₂O → 2NaOH + H₂."
+        },
+        {
+          "id": "hoa-10",
+          "topic": "Tính toán hoá học",
+          "level": 3,
+          "question": "Cho 5,6 g Fe (M = 56) tác dụng hết với dung dịch HCl dư. Thể tích khí H₂ thu được ở điều kiện chuẩn (1 mol khí chiếm 24,79 L) là",
+          "options": [
+            "1,2395 L",
+            "3,7185 L",
+            "4,958 L",
+            "2,479 L"
+          ],
+          "answer": 3,
+          "explanation": "Fe + 2HCl → FeCl₂ + H₂. Số mol Fe = 0,1 mol nên số mol H₂ = 0,1 mol, V = 0,1 × 24,79 = 2,479 L."
+        }
+      ]
+    },
+    {
+      "id": "sinh",
+      "name": "Sinh học",
+      "questions": [
+        {
+          "id": "sinh-01",
+          "topic": "Di truyền phân tử",
+          "level": 1,
+          "question": "Đơn phân cấu tạo nên phân tử DNA là",
+          "options": [
+            "amino acid",
+            "nucleotide",
+            "glucose",
+            "acid béo"
+          ],
+          "answer": 1,
+          "explanation": "DNA là polymer của các nucleotide (A, T, G, C)."
+        },
+        {
+          "id": "sinh-02",
+          "topic": "Di truyền phân tử",
+          "level": 1,
+          "question": "Quá trình tổng hợp RNA dựa trên mạch khuôn của gene được gọi là",
+          "options": [
+            "tái bản DNA",
+            "dịch mã",
+            "phiên mã",
+            "đột biến gene"
+          ],
+          "answer": 2,
+          "explanation": "Phiên mã là quá trình tổng hợp RNA từ mạch khuôn của gene."
+        },
+        {
+          "id": "sinh-03",
+          "topic": "Phiên mã",
+          "level": 2,
+          "question": "Một đoạn mạch khuôn của gene có trình tự 3'-TAC GGA-5'. Đoạn mRNA được phiên mã từ mạch này có trình tự là",
+          "options": [
+            "5'-AUG CCU-3'",
+            "5'-ATG CCT-3'",
+            "5'-UAC GGA-3'",
+            "5'-AUG GGA-3'"
+          ],
+          "answer": 0,
+          "explanation": "Theo nguyên tắc bổ sung khi phiên mã: T → A, A → U, C → G, G → C, nên mRNA là 5'-AUG CCU-3'."
+        },
+        {
+          "id": "sinh-04",
+          "topic": "Nhiễm sắc thể",
+          "level": 1,
+          "question": "Bộ nhiễm sắc thể lưỡng bội của người bình thường là",
+          "options": [
+            "2n = 23",
+            "2n = 44",
+            "2n = 48",
+            "2n = 46"
+          ],
+          "answer": 3,
+          "explanation": "Người có 2n = 46 nhiễm sắc thể (23 cặp)."
+        },
+        {
+          "id": "sinh-05",
+          "topic": "Quy luật di truyền",
+          "level": 2,
+          "question": "Ở một loài thực vật, allele A quy định hoa đỏ trội hoàn toàn so với allele a quy định hoa trắng. Phép lai Aa × Aa cho đời con có tỉ lệ kiểu hình là",
+          "options": [
+            "1 đỏ : 1 trắng",
+            "3 đỏ : 1 trắng",
+            "100% đỏ",
+            "1 đỏ : 2 hồng : 1 trắng"
+          ],
+          "answer": 1,
+          "explanation": "Aa × Aa → 1AA : 2Aa : 1aa. Do trội hoàn toàn nên kiểu hình là 3 đỏ : 1 trắng."
+        },
+        {
+          "id": "sinh-06",
+          "topic": "Di truyền học người",
+          "level": 2,
+          "question": "Người mắc hội chứng Down có bộ nhiễm sắc thể gồm",
+          "options": [
+            "45 chiếc, thiếu một nhiễm sắc thể X",
+            "47 chiếc, thừa một nhiễm sắc thể X",
+            "47 chiếc, có ba nhiễm sắc thể số 21",
+            "46 chiếc, mất đoạn nhiễm sắc thể số 5"
+          ],
+          "answer": 2,
+          "explanation": "Hội chứng Down là thể ba ở cặp nhiễm sắc thể số 21 (2n + 1 = 47)."
+        },
+        {
+          "id": "sinh-07",
+          "topic": "Di truyền quần thể",
+          "level": 2,
+          "question": "Một quần thể ngẫu phối đang ở trạng thái cân bằng di truyền có tần số allele A là 0,6 và allele a là 0,4. Tần số kiểu gene Aa trong quần thể là",
+          "options": [
+            "0,48",
+            "0,24",
+            "0,36",
+            "0,16"
+          ],
+          "answer": 0,
+          "explanation": "Theo định luật Hardy–Weinberg, tần số Aa = 2pq = 2 × 0,6 × 0,4 = 0,48."
+        },
+        {
+          "id": "sinh-08",
+          "topic": "Tiến hoá",
+          "level": 1,
+          "question": "Theo thuyết tiến hoá tổng hợp hiện đại, nhân tố tạo ra nguồn nguyên liệu sơ cấp cho quá trình tiến hoá là",
+          "options": [
+            "chọn lọc tự nhiên",
+            "giao phối không ngẫu nhiên",
+            "các yếu tố ngẫu nhiên",
+            "đột biến"
+          ],
+          "answer": 3,
+          "explanation": "Đột biến tạo ra các allele mới, là nguồn nguyên liệu sơ cấp của tiến hoá."
+        },
+        {
+          "id": "sinh-09",
+          "topic": "Hệ sinh thái",
+          "level": 1,
+          "question": "Trong một hệ sinh thái, nhóm sinh vật nào sau đây là sinh vật sản xuất?",
+          "options": [
+            "Động vật ăn thực vật",
+            "Thực vật và tảo",
+            "Nấm",
+            "Động vật ăn thịt"
+          ],
+          "answer": 1,
+          "explanation": "Sinh vật sản xuất là sinh vật tự dưỡng, chủ yếu gồm thực vật và tảo. Nấm thuộc nhóm sinh vật phân giải."
+        },
+        {
+          "id": "sinh-10",
+          "topic": "Chuỗi thức ăn",
+          "level": 2,
+          "question": "Cho chuỗi thức ăn: Cỏ → Châu chấu → Ếch → Rắn. Trong chuỗi này, ếch là",
+          "options": [
+            "sinh vật sản xuất",
+            "sinh vật tiêu thụ bậc 1",
+            "sinh vật tiêu thụ bậc 2",
+            "sinh vật tiêu thụ bậc 3"
+          ],
+          "answer": 2,
+          "explanation": "Cỏ là sinh vật sản xuất, châu chấu là sinh vật tiêu thụ bậc 1, ếch ăn châu chấu nên là sinh vật tiêu thụ bậc 2."
+        }
+      ]
+    },
+    {
+      "id": "su",
+      "name": "Lịch sử",
+      "questions": [
+        {
+          "id": "su-01",
+          "topic": "Thế giới sau Chiến tranh thế giới thứ hai",
+          "level": 1,
+          "question": "Tổ chức Liên hợp quốc chính thức được thành lập vào năm nào?",
+          "options": [
+            "1919",
+            "1945",
+            "1949",
+            "1967"
+          ],
+          "answer": 1,
+          "explanation": "Hiến chương Liên hợp quốc có hiệu lực ngày 24-10-1945."
+        },
+        {
+          "id": "su-02",
+          "topic": "ASEAN",
+          "level": 1,
+          "question": "Hiệp hội các quốc gia Đông Nam Á (ASEAN) được thành lập năm 1967 tại",
+          "options": [
+            "Jakarta (Indonesia)",
+            "Manila (Philippines)",
+            "Bangkok (Thái Lan)",
+            "Kuala Lumpur (Malaysia)"
+          ],
+          "answer": 2,
+          "explanation": "ASEAN thành lập ngày 8-8-1967 tại Bangkok với 5 nước sáng lập."
+        },
+        {
+          "id": "su-03",
+          "topic": "ASEAN",
+          "level": 1,
+          "question": "Việt Nam gia nhập ASEAN vào năm nào?",
+          "options": [
+            "1995",
+            "1986",
+            "1997",
+            "1999"
+          ],
+          "answer": 0,
+          "explanation": "Ngày 28-7-1995, Việt Nam trở thành thành viên thứ 7 của ASEAN."
+        },
+        {
+          "id": "su-04",
+          "topic": "Chiến tranh lạnh",
+          "level": 2,
+          "question": "Tháng 12-1989, tại cuộc gặp ở Malta, lãnh đạo hai nước nào đã tuyên bố chấm dứt Chiến tranh lạnh?",
+          "options": [
+            "Mỹ và Anh",
+            "Liên Xô và Trung Quốc",
+            "Mỹ và Trung Quốc",
+            "Mỹ và Liên Xô"
+          ],
+          "answer": 3,
+          "explanation": "Tổng thống Mỹ G. Bush và Tổng Bí thư Liên Xô M. Gorbachev tuyên bố chấm dứt Chiến tranh lạnh tại Malta."
+        },
+        {
+          "id": "su-05",
+          "topic": "Toàn cầu hoá",
+          "level": 2,
+          "question": "Xu thế toàn cầu hoá là hệ quả quan trọng của",
+          "options": [
+            "cuộc Chiến tranh lạnh",
+            "cuộc cách mạng khoa học – công nghệ",
+            "sự sụp đổ của Trật tự hai cực Yalta",
+            "phong trào giải phóng dân tộc"
+          ],
+          "answer": 1,
+          "explanation": "Cách mạng khoa học – công nghệ thúc đẩy lực lượng sản xuất phát triển và quốc tế hoá, dẫn tới xu thế toàn cầu hoá."
+        },
+        {
+          "id": "su-06",
+          "topic": "Cách mạng tháng Tám năm 1945",
+          "level": 1,
+          "question": "Ngày 2-9-1945, tại Quảng trường Ba Đình (Hà Nội), Chủ tịch Hồ Chí Minh đã",
+          "options": [
+            "đọc Lời kêu gọi toàn quốc kháng chiến",
+            "kí Hiệp định Sơ bộ với Pháp",
+            "đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hoà",
+            "chủ trì Đại hội Quốc dân ở Tân Trào"
+          ],
+          "answer": 2,
+          "explanation": "Ngày 2-9-1945, Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hoà."
+        },
+        {
+          "id": "su-07",
+          "topic": "Kháng chiến chống Pháp",
+          "level": 1,
+          "question": "Thắng lợi quân sự nào giữ vai trò quyết định, buộc thực dân Pháp phải kí Hiệp định Geneva năm 1954?",
+          "options": [
+            "Chiến dịch Điện Biên Phủ năm 1954",
+            "Chiến dịch Việt Bắc thu – đông năm 1947",
+            "Chiến dịch Biên giới thu – đông năm 1950",
+            "Chiến dịch Hoà Bình đông – xuân 1951 – 1952"
+          ],
+          "answer": 0,
+          "explanation": "Chiến thắng Điện Biên Phủ (7-5-1954) đập tan kế hoạch Navarre, buộc Pháp kí Hiệp định Geneva."
+        },
+        {
+          "id": "su-08",
+          "topic": "Kháng chiến chống Mỹ",
+          "level": 2,
+          "question": "Theo Hiệp định Paris năm 1973 về chấm dứt chiến tranh, lập lại hoà bình ở Việt Nam, Mỹ phải",
+          "options": [
+            "tiếp tục viện trợ quân sự cho chính quyền Sài Gòn",
+            "chia đôi lâu dài lãnh thổ Việt Nam",
+            "được giữ lại các căn cứ quân sự ở miền Nam",
+            "rút hết quân Mỹ và quân các nước đồng minh về nước"
+          ],
+          "answer": 3,
+          "explanation": "Hiệp định Paris (27-1-1973) buộc Mỹ tôn trọng độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ của Việt Nam và rút hết quân về nước."
+        },
+        {
+          "id": "su-09",
+          "topic": "Công cuộc Đổi mới",
+          "level": 1,
+          "question": "Đường lối Đổi mới đất nước được đề ra lần đầu tiên tại Đại hội đại biểu toàn quốc lần thứ mấy của Đảng Cộng sản Việt Nam?",
+          "options": [
+            "Đại hội IV (1976)",
+            "Đại hội VI (1986)",
+            "Đại hội V (1982)",
+            "Đại hội VII (1991)"
+          ],
+          "answer": 1,
+          "explanation": "Đại hội VI (12-1986) mở đầu công cuộc Đổi mới toàn diện đất nước."
+        },
+        {
+          "id": "su-10",
+          "topic": "Hồ Chí Minh trong lịch sử Việt Nam",
+          "level": 1,
+          "question": "Năm 1911, Nguyễn Tất Thành ra đi tìm đường cứu nước từ",
+          "options": [
+            "cảng Hải Phòng",
+            "cảng Đà Nẵng",
+            "bến cảng Nhà Rồng (Sài Gòn)",
+            "cảng Quy Nhơn"
+          ],
+          "answer": 2,
+          "explanation": "Ngày 5-6-1911, Nguyễn Tất Thành rời bến cảng Nhà Rồng (Sài Gòn) ra đi tìm đường cứu nước."
+        }
+      ]
+    },
+    {
+      "id": "dia",
+      "name": "Địa lí",
+      "questions": [
+        {
+          "id": "dia-01",
+          "topic": "Vị trí địa lí và lãnh thổ",
+          "level": 1,
+          "question": "Đường bờ biển nước ta dài khoảng",
+          "options": [
+            "2360 km",
+            "3260 km",
+            "4600 km",
+            "1650 km"
+          ],
+          "answer": 1,
+          "explanation": "Bờ biển Việt Nam dài khoảng 3260 km, kéo dài từ Móng Cái đến Hà Tiên."
+        },
+        {
+          "id": "dia-02",
+          "topic": "Vị trí địa lí và lãnh thổ",
+          "level": 1,
+          "question": "Hai quần đảo xa bờ thuộc chủ quyền của Việt Nam trên Biển Đông là",
+          "options": [
+            "Hoàng Sa và Trường Sa",
+            "Côn Đảo và Phú Quốc",
+            "Cát Bà và Cô Tô",
+            "Thổ Chu và Nam Du"
+          ],
+          "answer": 0,
+          "explanation": "Hoàng Sa và Trường Sa là hai quần đảo xa bờ của Việt Nam trên Biển Đông."
+        },
+        {
+          "id": "dia-03",
+          "topic": "Địa hình",
+          "level": 2,
+          "question": "Đặc điểm nổi bật của địa hình Việt Nam là",
+          "options": [
+            "đồng bằng chiếm phần lớn diện tích",
+            "núi cao trên 2000 m chiếm phần lớn diện tích",
+            "đồi núi chiếm phần lớn diện tích nhưng chủ yếu là đồi núi thấp",
+            "địa hình bằng phẳng, ít bị chia cắt"
+          ],
+          "answer": 2,
+          "explanation": "Đồi núi chiếm khoảng 3/4 diện tích lãnh thổ, trong đó chủ yếu là đồi núi thấp."
+        },
+        {
+          "id": "dia-04",
+          "topic": "Địa hình",
+          "level": 1,
+          "question": "Đỉnh Fansipan, đỉnh núi cao nhất Việt Nam, nằm trên dãy núi nào?",
+          "options": [
+            "Trường Sơn Bắc",
+            "Bạch Mã",
+            "Hoành Sơn",
+            "Hoàng Liên Sơn"
+          ],
+          "answer": 3,
+          "explanation": "Fansipan thuộc dãy Hoàng Liên Sơn ở vùng núi Tây Bắc."
+        },
+        {
+          "id": "dia-05",
+          "topic": "Khí hậu",
+          "level": 1,
+          "question": "Khí hậu Việt Nam có tính chất",
+          "options": [
+            "ôn đới hải dương",
+            "nhiệt đới ẩm gió mùa",
+            "cận nhiệt đới khô",
+            "xích đạo nóng quanh năm"
+          ],
+          "answer": 1,
+          "explanation": "Nước ta nằm trong vùng nội chí tuyến, giáp biển và chịu ảnh hưởng của gió mùa nên khí hậu mang tính chất nhiệt đới ẩm gió mùa."
+        },
+        {
+          "id": "dia-06",
+          "topic": "Khí hậu",
+          "level": 2,
+          "question": "Gió mùa Đông Bắc ảnh hưởng mạnh nhất đến khu vực nào của nước ta?",
+          "options": [
+            "Miền Bắc",
+            "Tây Nguyên",
+            "Nam Bộ",
+            "Duyên hải Nam Trung Bộ"
+          ],
+          "answer": 0,
+          "explanation": "Gió mùa Đông Bắc hoạt động mạnh ở miền Bắc, tạo nên mùa đông lạnh; càng vào Nam càng suy yếu."
+        },
+        {
+          "id": "dia-07",
+          "topic": "Địa hình đồng bằng",
+          "level": 1,
+          "question": "Đồng bằng châu thổ có diện tích lớn nhất nước ta là",
+          "options": [
+            "Đồng bằng sông Hồng",
+            "Đồng bằng ven biển miền Trung",
+            "Đồng bằng sông Cửu Long",
+            "Đồng bằng Thanh – Nghệ – Tĩnh"
+          ],
+          "answer": 2,
+          "explanation": "Đồng bằng sông Cửu Long rộng khoảng 40 000 km², lớn nhất cả nước."
+        },
+        {
+          "id": "dia-08",
+          "topic": "Địa lí nông nghiệp",
+          "level": 2,
+          "question": "Vùng chuyên canh cây cà phê lớn nhất nước ta là",
+          "options": [
+            "Đông Nam Bộ",
+            "Trung du và miền núi Bắc Bộ",
+            "Bắc Trung Bộ",
+            "Tây Nguyên"
+          ],
+          "answer": 3,
+          "explanation": "Tây Nguyên có đất đỏ badan và khí hậu cận xích đạo, là vùng trồng cà phê lớn nhất cả nước."
+        },
+        {
+          "id": "dia-09",
+          "topic": "Địa lí dân cư",
+          "level": 1,
+          "question": "Việt Nam có bao nhiêu dân tộc cùng sinh sống?",
+          "options": [
+            "45",
+            "54",
+            "63",
+            "36"
+          ],
+          "answer": 1,
+          "explanation": "Việt Nam là quốc gia đa dân tộc với 54 dân tộc."
+        },
+        {
+          "id": "dia-10",
+          "topic": "Chuyển dịch cơ cấu kinh tế",
+          "level": 2,
+          "question": "Trong quá trình công nghiệp hoá, hiện đại hoá, cơ cấu kinh tế theo ngành của nước ta chuyển dịch theo hướng",
+          "options": [
+            "tăng tỉ trọng nông, lâm, thuỷ sản; giảm tỉ trọng dịch vụ",
+            "giảm tỉ trọng công nghiệp và xây dựng",
+            "giảm tỉ trọng nông, lâm, thuỷ sản; tăng tỉ trọng công nghiệp, xây dựng và dịch vụ",
+            "giữ nguyên tỉ trọng của các ngành"
+          ],
+          "answer": 2,
+          "explanation": "Xu hướng chung là giảm tỉ trọng khu vực nông, lâm, thuỷ sản và tăng tỉ trọng công nghiệp, xây dựng, dịch vụ."
+        }
+      ]
+    },
+    {
+      "id": "anh",
+      "name": "Tiếng Anh",
+      "questions": [
+        {
+          "id": "anh-01",
+          "topic": "Pronunciation",
+          "level": 1,
+          "question": "Which word has the letters 'th' pronounced differently from the others?",
+          "options": [
+            "think",
+            "thank",
+            "this",
+            "three"
+          ],
+          "answer": 2,
+          "explanation": "'this' có âm /ð/, các từ còn lại có âm /θ/."
+        },
+        {
+          "id": "anh-02",
+          "topic": "Word stress",
+          "level": 1,
+          "question": "Which word has a different stress pattern from the others?",
+          "options": [
+            "teacher",
+            "student",
+            "happy",
+            "begin"
+          ],
+          "answer": 3,
+          "explanation": "'begin' nhấn âm tiết thứ hai, các từ còn lại nhấn âm tiết thứ nhất."
+        },
+        {
+          "id": "anh-03",
+          "topic": "Tenses",
+          "level": 2,
+          "question": "By the time we arrived at the cinema, the film ______.",
+          "options": [
+            "had already started",
+            "has already started",
+            "already starts",
+            "would already start"
+          ],
+          "answer": 0,
+          "explanation": "Hành động xảy ra trước một hành động khác trong quá khứ dùng thì quá khứ hoàn thành."
+        },
+        {
+          "id": "anh-04",
+          "topic": "Conditional sentences",
+          "level": 2,
+          "question": "If I ______ you, I would apply for that scholarship.",
+          "options": [
+            "am",
+            "were",
+            "had been",
+            "will be"
+          ],
+          "answer": 1,
+          "explanation": "Câu điều kiện loại 2: If + S + V (quá khứ đơn), S + would + V. Với động từ 'be' dùng 'were'."
+        },
+        {
+          "id": "anh-05",
+          "topic": "Passive voice",
+          "level": 2,
+          "question": "The new school library ______ last year.",
+          "options": [
+            "built",
+            "has built",
+            "was built",
+            "is building"
+          ],
+          "answer": 2,
+          "explanation": "Thư viện 'được xây' trong quá khứ (last year) nên dùng bị động quá khứ đơn: was built."
+        },
+        {
+          "id": "anh-06",
+          "topic": "Relative clauses",
+          "level": 1,
+          "question": "The girl ______ won the first prize is my classmate.",
+          "options": [
+            "which",
+            "whose",
+            "whom",
+            "who"
+          ],
+          "answer": 3,
+          "explanation": "Đại từ quan hệ 'who' thay cho danh từ chỉ người làm chủ ngữ của mệnh đề quan hệ."
+        },
+        {
+          "id": "anh-07",
+          "topic": "Reported speech",
+          "level": 2,
+          "question": "\"I finished my homework yesterday,\" she said. → She said that she ______ her homework the day before.",
+          "options": [
+            "finishes",
+            "had finished",
+            "has finished",
+            "will finish"
+          ],
+          "answer": 1,
+          "explanation": "Khi tường thuật, quá khứ đơn lùi thành quá khứ hoàn thành; 'yesterday' đổi thành 'the day before'."
+        },
+        {
+          "id": "anh-08",
+          "topic": "Collocations",
+          "level": 2,
+          "question": "You should ______ advantage of every opportunity to practise speaking English.",
+          "options": [
+            "take",
+            "make",
+            "do",
+            "get"
+          ],
+          "answer": 0,
+          "explanation": "Cụm cố định: take advantage of (tận dụng)."
+        },
+        {
+          "id": "anh-09",
+          "topic": "Communication",
+          "level": 1,
+          "question": "Nam: \"Would you like to join our study group this weekend?\" – Lan: \"______\"",
+          "options": [
+            "Yes, I do.",
+            "Not at all.",
+            "I'd love to. Thanks!",
+            "You're welcome."
+          ],
+          "answer": 2,
+          "explanation": "Đáp lại lời mời 'Would you like to...?' một cách tự nhiên là 'I'd love to.'"
+        },
+        {
+          "id": "anh-10",
+          "topic": "Idioms",
+          "level": 3,
+          "question": "\"The test was a piece of cake.\" The phrase 'a piece of cake' is closest in meaning to ______.",
+          "options": [
+            "very boring",
+            "quite expensive",
+            "really delicious",
+            "very easy"
+          ],
+          "answer": 3,
+          "explanation": "'A piece of cake' là thành ngữ chỉ việc gì đó rất dễ."
+        }
+      ]
+    }
+  ]
+}

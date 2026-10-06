@@ -1,0 +1,13 @@
+{
+  "_huong_dan": "Mỗi môn là một cuốn sách trên tủ. 'href' để trống \"\" thì sách mờ đi và hiện 'Sắp có'. 'spine' là chữ ngắn in trên gáy sách. 'kiemTra' là mã môn trong data/de-mau.json (để trống nếu môn không có trong bài kiểm tra). Tủ sách chứa tối đa 9 cuốn.",
+  "monHoc": [
+    { "id": "toan", "name": "Toán", "spine": "Toán", "color": "#e2504c", "href": "", "kiemTra": "toan" },
+    { "id": "ly-mo-phong", "name": "Vật lí mô phỏng", "spine": "Lí mô phỏng", "color": "#4f8fd8", "href": "https://ai.studio/apps/7e646bce-2d9b-4cdb-8b44-3e9b9481f6cf?fullscreenApplet=true", "kiemTra": "ly" },
+    { "id": "ly-tong-hop", "name": "Vật lí tổng hợp", "spine": "Lí tổng hợp", "color": "#3d6fb8", "href": "https://aistudio.google.com/apps/4be7f7bf-c0fb-4a10-8b2c-956aab1b8e1e?showAssistant=true&showPreview=true&fullscreenApplet=true", "kiemTra": "ly" },
+    { "id": "hoa", "name": "Hoá học", "spine": "Hoá học", "color": "#33b39a", "href": "https://ai.studio/apps/8118e47f-02f6-427b-9af5-8a73d0b81e27?fullscreenApplet=true", "kiemTra": "hoa" },
+    { "id": "sinh", "name": "Sinh học", "spine": "Sinh học", "color": "#6bbf59", "href": "", "kiemTra": "sinh" },
+    { "id": "su", "name": "Lịch sử", "spine": "Lịch sử", "color": "#b0683a", "href": "https://ai.studio/apps/883684e6-92e1-4eca-97a0-71b0f1a97101?fullscreenApplet=true", "kiemTra": "su" },
+    { "id": "dia", "name": "Địa lí", "spine": "Địa lí", "color": "#f2a93b", "href": "https://ai.studio/apps/1c451ecf-cd29-4d3f-a07e-44f54810fe75?fullscreenApplet=true", "kiemTra": "dia" },
+    { "id": "anh", "name": "Tiếng Anh", "spine": "Tiếng Anh", "color": "#8a6fe0", "href": "", "kiemTra": "anh" }
+  ]
+}

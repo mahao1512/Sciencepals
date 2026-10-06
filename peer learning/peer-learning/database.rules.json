@@ -1,0 +1,92 @@
+{
+  "rules": {
+    "phong": {
+      "$ma": {
+        ".validate": "$ma.matches(/^[A-Z0-9]{6}$/)",
+        ".write": "auth != null && ((!data.exists() && newData.child('meta/chuPhong').val() === auth.uid && !newData.child('thanhVien').exists() && !newData.child('tin').exists() && !newData.child('net').exists()) || (data.exists() && !newData.exists() && !data.child('thanhVien').exists()))",
+
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && data.exists() && newData.exists() && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          ".validate": "newData.hasChildren(['loai', 'soCho', 'chuPhong', 'taoLuc'])",
+          "loai": { ".validate": "(newData.val() === 'doi' || newData.val() === 'nhom') && (!data.exists() || newData.val() === data.val())" },
+          "soCho": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 8 && (!data.exists() || newData.val() === data.val())" },
+          "taoLuc": { ".validate": "newData.isNumber() && (!data.exists() || newData.val() === data.val())" },
+          "chuPhong": { ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val() || newData.parent().parent().child('thanhVien/' + newData.val()).exists())" },
+          "trongTu": { ".validate": "newData.isNumber()" },
+          "$khac": { ".validate": false }
+        },
+
+        "cho": {
+          ".read": "auth != null",
+          "$i": {
+            ".write": "auth != null && data.exists() && ((data.val() === 'trong' && newData.val() === auth.uid) || (data.val() === auth.uid && newData.val() === 'trong'))",
+            ".validate": "$i.matches(/^[0-7]$/) && newData.isString()"
+          }
+        },
+
+        "thanhVien": {
+          ".read": "auth != null && data.child(auth.uid).exists()",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && (!newData.exists() || newData.parent().parent().child('cho/' + newData.child('cho').val()).val() === auth.uid)",
+            ".validate": "!newData.exists() || newData.hasChildren(['ten', 'nhanVat', 'ban', 'trangThai', 'cho'])",
+            "ten": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24" },
+            "trangThai": { ".validate": "newData.val() === 'vui-ve' || newData.val() === 'hao-huc' || newData.val() === 'buon-ngu' || newData.val() === 'buon-ba'" },
+            "cho": { ".validate": "newData.isString() && newData.val().matches(/^[0-7]$/)" }
+          }
+        },
+
+        "tin": {
+          ".read": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          "$id": {
+            ".write": "auth != null && !data.exists() && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+            ".validate": "newData.hasChildren(['uid', 'ten', 'noiDung', 'luc']) && newData.child('uid').val() === auth.uid && newData.child('ten').val() === root.child('phong/' + $ma + '/thanhVien/' + auth.uid + '/ten').val() && newData.child('luc').val() === now",
+            "noiDung": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300" }
+          }
+        },
+
+        "net": {
+          ".read": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          ".write": "auth != null && !newData.exists() && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          "$id": {
+            ".write": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists() && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.child('uid').val() === auth.uid && !newData.exists()))",
+            ".validate": "!newData.exists() || newData.hasChildren(['uid', 'mau', 'co', 'diem', 'luc'])"
+          }
+        },
+
+        "de": {
+          ".read": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          ".write": "auth != null && root.child('phong/' + $ma + '/meta/chuPhong').val() === auth.uid",
+          ".validate": "newData.hasChildren(['nguoiGui', 'ten', 'tenFile', 'soTrang', 'luc', 'trang']) && newData.child('soTrang').isNumber() && newData.child('soTrang').val() >= 1 && newData.child('soTrang').val() <= 10",
+          "tenFile": { ".validate": "newData.isString() && newData.val().length <= 120" },
+          "trang": {
+            "$i": { ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().beginsWith('data:image/jpeg;base64,') && newData.val().length <= 600000" }
+          }
+        },
+
+        "deCho": {
+          ".read": "auth != null && root.child('phong/' + $ma + '/meta/chuPhong').val() === auth.uid",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists() && (auth.uid === $uid || root.child('phong/' + $ma + '/meta/chuPhong').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['nguoiGui', 'ten', 'tenFile', 'soTrang', 'luc', 'trang', 'trangThai']) && newData.child('nguoiGui').val() === $uid && newData.child('soTrang').isNumber() && newData.child('soTrang').val() >= 1 && newData.child('soTrang').val() <= 10",
+            "tenFile": { ".validate": "newData.isString() && newData.val().length <= 120" },
+            "trangThai": { ".validate": "newData.val() === 'cho' || newData.val() === 'tuchoi'" },
+            "trang": {
+              "$i": { ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().beginsWith('data:image/jpeg;base64,') && newData.val().length <= 600000" }
+            }
+          }
+        },
+
+        "dongHo": {
+          ".read": "auth != null && root.child('phong/' + $ma + '/thanhVien/' + auth.uid).exists()",
+          ".write": "auth != null && root.child('phong/' + $ma + '/meta/chuPhong').val() === auth.uid",
+          ".validate": "newData.hasChildren(['thoiLuongMs', 'conLaiMs', 'batDauLuc', 'dangChay'])",
+          "thoiLuongMs": { ".validate": "newData.isNumber() && newData.val() >= 60000 && newData.val() <= 10800000" },
+          "batDauLuc": { ".validate": "newData.isNumber() && (newData.val() === 0 || newData.val() === now)" },
+          "dangChay": { ".validate": "newData.isBoolean()" }
+        }
+      }
+    }
+  }
+}
