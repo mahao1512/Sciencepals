@@ -48,10 +48,16 @@ export function veTaoNhanVat(el, opts) {
       `<label class="field" style="margin-bottom:14px"><span>Tên hiển thị (bạn bè sẽ thấy tên này)</span>` +
       `<input class="input" name="ten" maxlength="24" autocomplete="nickname" required value="${esc(opts.ten || '')}" placeholder="Ví dụ: Minh Anh"></label>` +
       nhomChon('gender', 'Giới tính', o.genders, nv.gender) +
+      `<h3 class="nv-nhom">💇 Tóc và da</h3>` +
       nhomChon('hair', 'Kiểu tóc', o.hair[nv.gender], nv.hair) +
       nhomChon('hairColor', 'Màu tóc', mauToc, nv.hairColor, { swatch: true }) +
       nhomChon('skin', 'Màu da', o.skinTones.map((s) => ({ ...s, mau: s.base })), nv.skin, { swatch: true }) +
-      nhomChon('expression', 'Biểu cảm', o.expressions, nv.expression) +
+      `<h3 class="nv-nhom">🙂 Gương mặt</h3>` +
+      nhomChon('eyes', 'Kiểu mắt', o.eyes, nv.eyes) +
+      nhomChon('brows', 'Lông mày', o.brows, nv.brows) +
+      nhomChon('mark', 'Chi tiết trên mặt', o.marks, nv.mark) +
+      nhomChon('expression', 'Biểu cảm (đổi được trong phòng học)', o.expressions, nv.expression) +
+      `<h3 class="nv-nhom">🎀 Phụ kiện</h3>` +
       nhomChon('accessory', 'Phụ kiện', phuKien, nv.accessory) +
       `<p class="small muted" style="margin:-6px 0 12px">Món có 🔒 mở khoá trong Cửa hàng bằng điểm chăm chỉ.</p>` +
       `<p class="error" id="nv-loi" role="alert" hidden></p>` +

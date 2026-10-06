@@ -11,7 +11,7 @@ apDungGiaoDien();
 
 /** Ảnh đầu nhân vật (cắt phần đầu của hình toàn thân) để làm nút tròn. */
 export function anhDau(nhanVat) {
-  return PeerAssets.renderCharacter(nhanVat).replace('viewBox="0 0 200 320"', 'viewBox="22 14 156 156"');
+  return PeerAssets.renderCharacter(nhanVat).replace('viewBox="0 0 200 320"', 'viewBox="24 24 152 152"');
 }
 
 /** Dòng nhỏ báo chế độ thử, chèn đầu trang. */

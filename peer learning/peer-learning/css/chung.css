@@ -97,7 +97,7 @@ svg a:focus-visible, .pa-book:focus-visible { outline: 3px solid var(--brand-500
   width: var(--tap); height: var(--tap); border-radius: var(--r-full); padding: 0; cursor: pointer;
   border: 2px solid var(--brand-500); background: var(--brand-50); overflow: hidden;
 }
-.avatar-btn svg { width: 100%; height: 100%; transform: scale(1.9) translateY(18%); }
+.avatar-btn svg { width: 100%; height: 100%; display: block; }
 
 /* Trình đơn thả xuống của nút nhân vật */
 .menu { position: relative; }
@@ -246,9 +246,11 @@ dialog.modal::backdrop { background: var(--overlay); }
   border-radius: var(--r-xl); padding: 12px 24px 0; position: sticky; top: calc(var(--header-h) + 12px);
 }
 .maker .stage svg { width: 100%; height: auto; display: block; }
+.nv-nhom { font-size: 1rem; color: var(--text-muted); margin: 18px 0 8px; padding-top: 12px; border-top: 1px dashed var(--border-strong); }
 @media (max-width: 640px) {
   .maker { grid-template-columns: 1fr; }
-  .maker .stage { position: static; max-width: 180px; margin: 0 auto; padding: 8px 16px 0; }
+  /* Điện thoại: hình xem trước dính trên cùng khi cuộn để thấy ngay thay đổi */
+  .maker .stage { position: sticky; top: 4px; z-index: 2; max-width: 132px; margin: 0 auto; padding: 6px 14px 0; box-shadow: var(--shadow-md); }
 }
 
 /* ---------- Giảm chuyển động ---------- */

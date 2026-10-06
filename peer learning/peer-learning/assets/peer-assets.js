@@ -5,7 +5,8 @@
  *   <script src="assets/peer-assets.js"></script>
  * rồi dùng qua biến toàn cục `PeerAssets`.
  *
- *   PeerAssets.renderCharacter({ gender, hair, expression, hairColor, skin, accessory })
+ *   PeerAssets.renderCharacter({ gender, hair, expression, hairColor, skin, accessory, eyes, brows, mark })
+ *     (eyes, brows, mark không bắt buộc — thiếu thì dùng mặc định)
  *   PeerAssets.renderDesk(deskId)
  *   PeerAssets.renderSeat({ character, deskId, empty })   // nhân vật ngồi sau bàn
  *   PeerAssets.renderBookshelf(subjects)                  // mỗi cuốn sách là một link
@@ -22,220 +23,466 @@
   const LINE = `fill="none" ${S}`;
 
   /* ============================================================
-   * 1. NHÂN VẬT — khung vẽ 200 x 320
-   *    Thứ tự lớp: tóc sau → tay → chân → áo → cổ → đầu → mặt → tóc trước → phụ kiện
+   * 1. NHÂN VẬT — phong cách chibi, khung vẽ 200 x 320
+   *    Thứ tự lớp: tóc sau → tay → chân → áo → cổ → tai → đầu → má, chi tiết → mắt → miệng
+   *                → tóc trước → lông mày → phụ kiện → hiệu ứng của biểu cảm (zzz, nước mắt, lấp lánh…)
+   *    Nhân vật dùng nét viền nâu mềm (VIEN); bàn ghế, tủ sách vẫn dùng nét mực INK.
+   *    Muốn thêm lựa chọn: thêm một mục vào SKIN_TONES, HAIR_COLORS, HAIR, EYES, BROWS, MARKS,
+   *    FACES (biểu cảm) hoặc ACCESSORIES theo đúng khuôn các mục có sẵn.
    * ============================================================ */
+  const VIEN = '#5b4339';
+  const SV = `stroke="${VIEN}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"`;
+  const LV = `fill="none" ${SV}`;
+  const RED = '#e2504c';
+  const SHIRT = '#ffffff';
+  const SHIRT_SHADE = '#e2e9f4';
+  const NAVY = '#2f4170';
+  const MIENG = '#c4474f';
+  const LUOI = '#ff8f94';
+
+  // Pha màu: sáng / tối hơn để làm bóng tóc
+  const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const tron = (a, b, t) => { const x = hexRgb(a), y = hexRgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+  const mauToc = (hex) => ({ base: hex, sang: tron(hex, '#ffffff', 0.38), toi: tron(hex, '#000000', 0.28) });
+
+  const star = (x, y, r, fill) =>
+    `<path d="M${x},${y - r} Q${x},${y} ${x + r},${y} Q${x},${y} ${x},${y + r} Q${x},${y} ${x - r},${y} Q${x},${y} ${x},${y - r} Z" fill="${fill}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+  const lapLanh = (x, y, r, fill = '#ffd766') =>
+    `<path d="M${x},${y - r} Q${x},${y} ${x + r},${y} Q${x},${y} ${x},${y + r} Q${x},${y} ${x - r},${y} Q${x},${y} ${x},${y - r} Z" fill="${fill}" stroke="${VIEN}" stroke-width="1.6" stroke-linejoin="round"/>`;
 
   const SKIN_TONES = {
-    sang: { name: 'Sáng', base: '#fbe0c8', shade: '#f0c4a2' },
-    tunhien: { name: 'Tự nhiên', base: '#f3c9a2', shade: '#e3ac80' },
-    ngam: { name: 'Ngăm', base: '#d9a273', shade: '#c18656' }
+    sang: { name: 'Sáng', base: '#ffe4d1', shade: '#f5c7ab' },
+    tunhien: { name: 'Tự nhiên', base: '#f7d0aa', shade: '#e6b087' },
+    ngam: { name: 'Ngăm', base: '#e0a979', shade: '#c88c5e' },
+    nau: { name: 'Nâu', base: '#b7825a', shade: '#9a6a45' }
   };
 
   const HAIR_COLORS = {
-    den: { name: 'Đen', hex: '#2b2326' },
-    nauden: { name: 'Nâu đen', hex: '#4a3128' },
-    nau: { name: 'Nâu', hex: '#7a4a2e' },
-    hatde: { name: 'Hạt dẻ', hex: '#a8643a' },
+    den: { name: 'Đen', hex: '#2f2629' },
+    nauden: { name: 'Nâu đen', hex: '#4b342b' },
+    nau: { name: 'Nâu', hex: '#7b4d32' },
+    hatde: { name: 'Hạt dẻ', hex: '#a8653c' },
     xanh: { name: 'Xanh than', hex: '#3f5f9e', unlockPrice: 120 },
-    hong: { name: 'Hồng đào', hex: '#e07f9f', unlockPrice: 120 }
+    hong: { name: 'Hồng đào', hex: '#e58aa8', unlockPrice: 120 },
+    tim: { name: 'Tím khoai môn', hex: '#8a6cc0', unlockPrice: 150 },
+    vang: { name: 'Vàng kem', hex: '#dfb25a', unlockPrice: 150 }
   };
 
-  const NAVY = '#27375e';
-  const SHIRT = '#ffffff';
-  const RED = '#e2504c';
+  /* ---------- Tóc: back(c) vẽ sau thân, front(c) vẽ trên mặt; c = { base, sang, toi } ---------- */
+  const bong = (c, d) => `<path d="${d}" fill="${c.sang}" opacity=".6"/>`;
+  const soi = (c, d, o = 0.45) => `<path d="${d}" fill="none" stroke="${c.toi}" stroke-width="2" stroke-linecap="round" opacity="${o}"/>`;
+  const veToc = (c, d) => `<path d="${d}" fill="${c.base}" ${SV}/>`;
+  // Mái chẻ đôi dùng chung cho nhiều kiểu tóc nữ
+  const MAI_CHE = 'M36,122 C30,64 60,36 100,36 C140,36 170,64 164,122 C160,106 154,96 146,90 C132,96 114,92 102,76 C92,92 74,98 58,92 C48,98 40,110 36,122 Z';
+  const BONG_MAI = 'M58,58 C72,46 90,42 104,44 C90,50 76,56 66,66 Z';
 
-  // Phần đầu tóc phủ lên trán, dùng chung cho nhiều kiểu
   const HAIR = {
     male: {
       'nam-ngan': {
         name: 'Ngắn gọn',
         back: () => '',
         front: (c) =>
-          `<path d="M42,98 Q36,30 100,30 Q164,30 158,98 Q154,78 144,66 Q128,74 112,62 Q96,74 76,64 Q60,70 54,78 Q46,86 42,98 Z" fill="${c}" ${S}/>`
+          veToc(c, 'M36,120 C30,70 58,36 100,36 C142,36 170,70 164,120 C160,106 156,98 150,92 C142,98 128,98 118,88 C110,98 92,100 80,92 C70,100 54,100 48,96 C42,104 38,112 36,120 Z') +
+          bong(c, 'M60,56 C74,44 92,42 106,44 C92,48 78,54 68,64 Z') +
+          soi(c, 'M118,88 C122,76 126,66 134,58 M80,92 C82,80 86,70 92,62')
       },
       'nam-re-ngoi': {
         name: 'Rẽ ngôi',
         back: () => '',
         front: (c) =>
-          `<path d="M42,100 Q34,28 100,28 Q166,28 158,100 Q156,80 146,70 Q112,82 70,56 Q52,72 42,100 Z" fill="${c}" ${S}/>` +
-          `<path d="M70,56 Q84,40 104,36" ${LINE} opacity=".45"/>`
+          veToc(c, 'M36,122 C28,66 60,34 104,34 C146,34 172,66 164,122 C162,108 158,98 152,90 C134,96 108,86 86,68 C80,84 60,98 44,102 C40,108 37,114 36,122 Z') +
+          bong(c, 'M112,44 C128,40 144,46 152,58 C142,54 128,52 116,52 Z') +
+          soi(c, 'M86,68 C96,54 110,46 126,42', 0.6) + soi(c, 'M120,90 C114,80 104,74 96,70')
       },
       'nam-xoan': {
         name: 'Xoăn',
         back: () => '',
         front: (c) => {
-          const curls = [
-            [50, 80, 15], [58, 60, 17], [74, 44, 18], [96, 36, 19],
-            [120, 38, 19], [140, 50, 18], [152, 68, 16], [154, 86, 13]
-          ];
-          const cap = `M44,90 Q40,34 100,34 Q160,34 156,90 Q140,64 100,62 Q60,64 44,90 Z`;
+          const lon = [[42, 104, 14], [46, 82, 16], [58, 62, 17], [78, 48, 18], [100, 42, 19], [122, 46, 18], [142, 58, 17], [155, 78, 16], [159, 100, 14]];
+          const mai = [[64, 88, 13], [86, 84, 13], [110, 84, 13], [132, 88, 12]];
+          const tat = [...lon, ...mai];
           return (
-            curls.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" ${S}/>`).join('') +
-            `<path d="${cap}" fill="${c}"/>` +
-            curls.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.5}" fill="${c}"/>`).join('') +
-            `<path d="M70,50 q8,-8 16,0 M104,44 q8,-8 16,0 M132,60 q8,-6 14,2" ${LINE} opacity=".35"/>`
+            tat.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c.base}" ${SV}/>`).join('') +
+            `<path d="M40,108 C36,60 64,42 100,42 C136,42 164,60 160,108 C150,92 130,86 100,86 C70,86 50,92 40,108 Z" fill="${c.base}"/>` +
+            tat.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.6}" fill="${c.base}"/>`).join('') +
+            tat.slice(2, 7).map(([x, y, r]) => `<path d="M${x - r * 0.5},${y - r * 0.2} q${r * 0.4},-${r * 0.5} ${r * 0.8},0" fill="none" stroke="${c.sang}" stroke-width="2.4" stroke-linecap="round"/>`).join('')
           );
         }
+      },
+      'nam-mai-bang': {
+        name: 'Mái bằng',
+        back: () => '',
+        front: (c) =>
+          veToc(c, 'M34,124 C28,62 60,32 100,32 C140,32 172,62 166,124 L160,124 C159,112 157,104 154,97 C140,93 120,92 100,92 C80,92 60,93 46,97 C43,104 41,112 40,124 Z') +
+          bong(c, 'M56,56 C72,42 96,38 116,40 C96,46 76,52 64,64 Z') +
+          soi(c, 'M62,93 l2,-10 M80,92 l1,-12 M100,92 v-12 M120,92 l-1,-12 M138,93 l-2,-10')
+      },
+      'nam-vuot-nguoc': {
+        name: 'Vuốt ngược',
+        back: () => '',
+        front: (c) =>
+          veToc(c, 'M40,114 C38,84 46,62 66,50 C70,32 96,22 122,26 C146,30 160,48 156,62 C162,76 162,96 160,114 C156,100 150,90 142,86 C124,80 88,80 66,86 C54,92 44,102 40,114 Z') +
+          bong(c, 'M76,40 C92,30 114,28 132,34 C114,36 96,40 84,48 Z') +
+          soi(c, 'M78,52 C96,40 118,38 138,46 M80,66 C98,56 122,56 142,64')
+      },
+      'nam-mai-giua': {
+        name: 'Rẽ giữa',
+        back: (c) => veToc(c, 'M38,112 C34,136 38,150 48,154 L50,112 Z') + veToc(c, 'M162,112 C166,136 162,150 152,154 L150,112 Z'),
+        front: (c) =>
+          veToc(c, 'M36,128 C28,64 60,34 100,34 C140,34 172,64 164,128 C160,112 154,100 144,92 C128,86 112,76 100,60 C88,76 72,86 56,92 C46,100 40,112 36,128 Z') +
+          bong(c, 'M60,58 C70,46 84,40 96,40 C86,48 76,56 68,68 Z') + bong(c, 'M140,58 C130,46 116,40 104,40 C114,48 124,56 132,68 Z') +
+          soi(c, 'M100,60 C98,50 96,44 92,38', 0.6)
       }
     },
     female: {
       'nu-dai-thang': {
         name: 'Dài thẳng',
-        back: (c) =>
-          `<path d="M38,100 Q32,26 100,26 Q168,26 162,100 L168,196 Q152,206 136,196 L134,110 L66,110 L64,196 Q48,206 32,196 Z" fill="${c}" ${S}/>`,
+        back: (c) => veToc(c, 'M32,112 C28,48 60,30 100,30 C140,30 172,48 168,112 L174,238 C160,250 146,244 138,236 L136,150 L64,150 L62,236 C54,244 40,250 26,238 Z') +
+          soi(c, 'M40,160 L36,226 M160,160 L164,226', 0.35),
         front: (c) =>
-          `<path d="M42,100 Q36,30 100,30 Q164,30 158,100 Q156,84 150,76 Q126,82 100,58 Q74,82 50,76 Q44,84 42,100 Z" fill="${c}" ${S}/>`
+          veToc(c, MAI_CHE) + bong(c, BONG_MAI) +
+          veToc(c, 'M38,112 C34,140 38,170 46,196 C50,180 52,150 50,118 Z') + veToc(c, 'M162,112 C166,140 162,170 154,196 C150,180 148,150 150,118 Z')
       },
       'nu-duoi-ngua': {
-        name: 'Buộc đuôi ngựa',
-        back: (c) =>
-          `<path d="M138,46 Q192,50 186,122 Q184,160 162,180 Q172,144 158,112 Q150,80 138,46 Z" fill="${c}" ${S}/>`,
+        name: 'Đuôi ngựa',
+        back: (c) => veToc(c, 'M134,48 C176,40 198,84 192,134 C188,170 172,196 150,210 C162,180 168,146 160,116 C154,92 146,70 134,48 Z') +
+          bong(c, 'M160,62 C178,74 186,98 184,124 C178,104 170,84 160,72 Z'),
         front: (c) =>
-          `<path d="M42,100 Q36,30 100,30 Q164,30 158,100 Q156,80 148,70 Q110,80 72,58 Q52,72 42,100 Z" fill="${c}" ${S}/>` +
-          `<path d="M44,98 Q40,120 49,134 L53,104 Z" fill="${c}" ${S}/>` +
-          `<circle cx="154" cy="54" r="7" fill="${RED}" ${S}/>`
+          veToc(c, 'M36,120 C30,64 60,36 100,36 C140,36 170,62 164,120 C160,104 154,94 146,88 C120,94 92,84 72,66 C64,84 52,96 42,102 C39,108 37,114 36,120 Z') +
+          bong(c, 'M96,42 C116,40 136,46 148,58 C134,54 116,52 102,52 Z') +
+          veToc(c, 'M40,106 C36,128 40,146 48,158 L52,112 Z') +
+          `<circle cx="146" cy="50" r="8" fill="${RED}" ${SV}/>`
       },
       'nu-bob': {
         name: 'Tóc bob',
-        back: (c) =>
-          `<path d="M36,104 Q30,24 100,24 Q170,24 164,104 Q170,146 150,152 Q140,154 134,146 L134,104 L66,104 L66,146 Q60,154 50,152 Q30,146 36,104 Z" fill="${c}" ${S}/>`,
+        back: (c) => veToc(c, 'M30,120 C26,46 60,30 100,30 C140,30 174,46 170,120 C174,148 166,164 148,162 L146,128 L54,128 L52,162 C34,164 26,148 30,120 Z'),
         front: (c) =>
-          `<path d="M42,100 Q36,30 100,30 Q164,30 158,100 Q156,86 152,78 Q100,64 48,78 Q44,86 42,100 Z" fill="${c}" ${S}/>`
+          veToc(c, 'M36,120 C30,62 60,36 100,36 C140,36 170,62 164,120 C160,106 156,98 152,94 C130,92 116,88 106,80 C96,90 70,94 48,94 C42,102 38,110 36,120 Z') +
+          bong(c, 'M58,56 C74,44 94,40 112,42 C94,48 76,54 66,66 Z') +
+          soi(c, 'M106,80 C110,70 116,62 124,56')
+      },
+      'nu-hai-bim': {
+        name: 'Hai bím',
+        back: (c) =>
+          veToc(c, 'M48,82 C16,90 6,140 18,190 C24,212 40,222 50,214 C40,184 40,146 54,108 Z') +
+          veToc(c, 'M152,82 C184,90 194,140 182,190 C176,212 160,222 150,214 C160,184 160,146 146,108 Z') +
+          soi(c, 'M30,120 q10,6 4,16 M26,152 q10,6 4,16 M170,120 q-10,6 -4,16 M174,152 q-10,6 -4,16', 0.4),
+        front: (c) =>
+          veToc(c, MAI_CHE) + bong(c, BONG_MAI) +
+          `<circle cx="48" cy="86" r="7" fill="#ffd766" ${SV}/><circle cx="152" cy="86" r="7" fill="#ffd766" ${SV}/>`
+      },
+      'nu-bui-cao': {
+        name: 'Búi cao',
+        back: (c) => `<circle cx="100" cy="32" r="22" fill="${c.base}" ${SV}/>` + soi(c, 'M86,26 q14,-12 28,0 M88,38 q12,8 24,0', 0.5) +
+          bong(c, 'M88,18 q10,-6 20,0 q-10,0 -16,6 Z'),
+        front: (c) =>
+          veToc(c, 'M36,120 C30,62 60,40 100,40 C140,40 170,62 164,120 C160,104 154,94 146,88 C130,94 112,90 104,78 C92,92 70,96 56,90 C46,98 40,108 36,120 Z') +
+          bong(c, 'M62,58 C76,48 92,46 106,48 C92,52 80,58 70,68 Z') +
+          `<path d="M42,108 C38,124 40,138 46,148 M158,108 C162,124 160,138 154,148" fill="none" stroke="${c.base}" stroke-width="4" stroke-linecap="round"/>`
+      },
+      'nu-xoan-dai': {
+        name: 'Xoăn dài',
+        back: (c) => veToc(c, 'M30,112 C24,46 60,28 100,28 C140,28 176,46 170,112 C180,140 164,158 176,184 C188,212 168,240 148,232 C156,208 140,192 142,164 L142,150 L58,150 L58,164 C60,192 44,208 52,232 C32,240 12,212 24,184 C36,158 20,140 30,112 Z') +
+          soi(c, 'M34,170 q10,10 0,22 M166,170 q-10,10 0,22', 0.4),
+        front: (c) =>
+          veToc(c, 'M36,122 C28,62 62,34 104,34 C146,34 172,64 164,122 C160,106 154,96 146,90 C126,92 100,84 82,70 C74,86 58,98 44,102 C40,108 38,114 36,122 Z') +
+          bong(c, 'M108,42 C126,40 142,46 152,58 C138,54 124,52 112,52 Z') +
+          veToc(c, 'M38,110 C30,130 42,146 34,166 C44,160 52,140 50,116 Z') + veToc(c, 'M162,110 C170,130 158,146 166,166 C156,160 148,140 150,116 Z')
+      },
+      'nu-mai-ngang': {
+        name: 'Mái ngang',
+        back: (c) => veToc(c, 'M32,112 C28,48 60,30 100,30 C140,30 172,48 168,112 L172,232 L138,232 L136,150 L64,150 L62,232 L28,232 Z'),
+        front: (c) =>
+          veToc(c, 'M36,118 C30,62 60,36 100,36 C140,36 170,62 164,118 L160,97 L40,97 Z') +
+          veToc(c, 'M36,100 L54,100 L54,154 L38,154 C34,140 34,118 36,100 Z') + veToc(c, 'M164,100 L146,100 L146,154 L162,154 C166,140 166,118 164,100 Z') +
+          bong(c, 'M58,54 C74,44 94,40 112,42 C94,48 76,54 66,64 Z') +
+          soi(c, 'M64,97 v-12 M84,97 v-14 M104,97 v-14 M124,97 v-14 M142,97 v-12')
       }
     }
   };
 
-  const eye = (cx, cy, rx, ry) =>
-    `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${INK}"/>` +
-    `<circle cx="${cx - 2}" cy="${cy - 3}" r="${rx * 0.36}" fill="#fff"/>`;
-  const blush = (o) =>
-    `<ellipse cx="64" cy="121" rx="9" ry="5" fill="#ff8f8f" opacity="${o}"/>` +
-    `<ellipse cx="136" cy="121" rx="9" ry="5" fill="#ff8f8f" opacity="${o}"/>`;
-  const star = (x, y, r, fill) =>
-    `<path d="M${x},${y - r} Q${x},${y} ${x + r},${y} Q${x},${y} ${x},${y + r} Q${x},${y} ${x - r},${y} Q${x},${y} ${x},${y - r} Z" fill="${fill}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+  /* ---------- Mắt: kiểu mắt (người dùng chọn) × trạng thái (do biểu cảm quyết định) ---------- */
+  const MAT_Y = 122;
+  const IRIS = '#3a2925';
+  const IRIS2 = '#7d5644';
+  const EYES = {
+    tron: { name: 'Tròn' },
+    'long-lanh': { name: 'Long lanh' },
+    'mot-mi': { name: 'Một mí' },
+    meo: { name: 'Mắt mèo' },
+    hien: { name: 'Hiền' },
+    cuoi: { name: 'Mắt cười' }
+  };
+  /** Mắt mở bình thường theo kiểu. `ben`: -1 mắt trái, 1 mắt phải (phía ngoài). `sao`: thay ánh sáng bằng ngôi sao. */
+  function matMo(kieu, cx, ben, sao) {
+    const y = MAT_Y;
+    const anh = (r1, r2) => sao
+      ? lapLanh(cx - 1, y - 2, 6, '#ffffff') + `<circle cx="${cx + 3}" cy="${y + 5}" r="${r2}" fill="#fff"/>`
+      : `<circle cx="${cx - 3}" cy="${y - 4}" r="${r1}" fill="#fff"/><circle cx="${cx + 3}" cy="${y + 5}" r="${r2}" fill="#fff"/>`;
+    switch (kieu) {
+      case 'long-lanh':
+        return `<ellipse cx="${cx}" cy="${y}" rx="10.5" ry="13" fill="${IRIS}"/>` +
+          `<ellipse cx="${cx}" cy="${y + 5}" rx="7.5" ry="6.5" fill="${IRIS2}"/>` + anh(4.4, 2.2) +
+          `<path d="M${cx - 11},${y - 6} Q${cx},${y - 17} ${cx + 11},${y - 6}" fill="none" stroke="${VIEN}" stroke-width="3" stroke-linecap="round"/>` +
+          `<path d="M${cx + 10 * ben},${y - 8} l${5 * ben},-4" fill="none" stroke="${VIEN}" stroke-width="2.4" stroke-linecap="round"/>`;
+      case 'mot-mi':
+        return `<path d="M${cx - 11},${y - 1} Q${cx},${y - 7} ${cx + 11},${y - 1} Q${cx + 9},${y + 8} ${cx},${y + 8} Q${cx - 9},${y + 8} ${cx - 11},${y - 1} Z" fill="${IRIS}"/>` +
+          `<circle cx="${cx - 2}" cy="${y + 1}" r="2.6" fill="#fff"/>` +
+          `<path d="M${cx - 12},${y - 2} Q${cx},${y - 8} ${cx + 12},${y - 2}" fill="none" stroke="${VIEN}" stroke-width="2.6" stroke-linecap="round"/>`;
+      case 'meo':
+        return `<ellipse cx="${cx}" cy="${y}" rx="9.5" ry="10.5" fill="${IRIS}" transform="rotate(${-14 * ben} ${cx} ${y})"/>` +
+          `<ellipse cx="${cx}" cy="${y + 4}" rx="6" ry="5" fill="${IRIS2}"/>` + anh(3.4, 1.6) +
+          `<path d="M${cx - 10 * ben},${y - 4} Q${cx},${y - 14} ${cx + 11 * ben},${y - 9} l${6 * ben},-4" fill="none" stroke="${VIEN}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+      case 'hien':
+        return `<ellipse cx="${cx}" cy="${y + 1}" rx="8.5" ry="10" fill="${IRIS}"/>` +
+          `<ellipse cx="${cx}" cy="${y + 5}" rx="5.5" ry="4.5" fill="${IRIS2}"/>` + anh(3.2, 1.5) +
+          `<path d="M${cx - 10 * ben},${y - 9} Q${cx},${y - 12} ${cx + 12 * ben},${y - 3}" fill="none" stroke="${VIEN}" stroke-width="2.8" stroke-linecap="round"/>`;
+      default: // tròn
+        return `<ellipse cx="${cx}" cy="${y}" rx="9" ry="11" fill="${IRIS}"/>` +
+          `<ellipse cx="${cx}" cy="${y + 4}" rx="6" ry="5.5" fill="${IRIS2}"/>` + anh(3.4, 1.6);
+    }
+  }
+  function veMat(kieu, trangThai, skin) {
+    return [[78, -1], [122, 1]].map(([cx, ben]) => {
+      const y = MAT_Y;
+      if (trangThai === 'nham') {
+        return `<path d="M${cx - 9},${y} Q${cx},${y + 7} ${cx + 9},${y}" fill="none" stroke="${VIEN}" stroke-width="3" stroke-linecap="round"/>` +
+          `<path d="M${cx + 9 * ben},${y} l${3 * ben},-2" fill="none" stroke="${VIEN}" stroke-width="2" stroke-linecap="round"/>`;
+      }
+      if (trangThai === 'cuoi' || (kieu === 'cuoi' && trangThai === 'mo')) {
+        return `<path d="M${cx - 9},${y + 3} Q${cx},${y - 8} ${cx + 9},${y + 3}" fill="none" stroke="${VIEN}" stroke-width="3.4" stroke-linecap="round"/>`;
+      }
+      const k = kieu === 'cuoi' ? 'tron' : kieu;
+      let m = matMo(k, cx, ben, trangThai === 'sao');
+      if (trangThai === 'to') m = `<g transform="translate(${cx} ${y}) scale(1.18) translate(${-cx} ${-y})">${m}</g>`;
+      if (trangThai === 'nheo') {
+        // Mí trên hạ xuống một nửa: tập trung / tự tin
+        m += `<path d="M${cx - 13},${y - 16} L${cx + 13},${y - 16} L${cx + 13},${y - 2} Q${cx},${y + 1} ${cx - 13},${y - 2} Z" fill="${skin.base}"/>` +
+          `<path d="M${cx - 11},${y - 2} Q${cx},${y + 1} ${cx + 11},${y - 2}" fill="none" stroke="${VIEN}" stroke-width="3" stroke-linecap="round"/>`;
+      }
+      return m;
+    }).join('');
+  }
 
-  const FACES = {
-    'vui-ve': {
-      name: 'Vui vẻ',
-      draw: () =>
-        `<path d="M68,87 Q78,82 88,87 M112,87 Q122,82 132,87" ${LINE}/>` +
-        eye(78, 104, 6.5, 8.5) + eye(122, 104, 6.5, 8.5) +
-        `<path d="M88,122 Q100,135 112,122" ${LINE}/>` +
-        blush(0.55)
+  /* ---------- Lông mày: kiểu × cách biểu cảm uốn ---------- */
+  const MAY_Y = 103;
+  const BROWS = {
+    cong: { name: 'Cong', cao: -4, day: 3.2 },
+    thang: { name: 'Thẳng', cao: -1, day: 3.4 },
+    ram: { name: 'Rậm', cao: -3, day: 5.6 },
+    manh: { name: 'Mảnh', cao: -4, day: 2 }
+  };
+  // trong: đầu mày phía trong (âm = nhướng lên); ngoai: đuôi mày; dy: cả cặp
+  const UON_MAY = {
+    binh: { trong: 0, ngoai: 0, dy: 0 },
+    lo: { trong: -6, ngoai: 2, dy: 0 },
+    nhiu: { trong: 4, ngoai: -2, dy: 1 },
+    nhuong: { trong: 0, ngoai: 0, dy: -6 },
+    thugian: { trong: 1, ngoai: 2, dy: 2 },
+    lech: { trong: 0, ngoai: 0, dy: 0, phai: -5 }
+  };
+  function veMay(kieu, uon, c) {
+    const B = BROWS[kieu] || BROWS.cong;
+    const U = UON_MAY[uon] || UON_MAY.binh;
+    return [[78, -1], [122, 1]].map(([cx, ben]) => {
+      const y = MAY_Y + U.dy + (ben === 1 && U.phai ? U.phai : 0);
+      const ix = cx - 10 * ben, ox = cx + 11 * ben;
+      const iy = y + U.trong, oy = y + U.ngoai;
+      return `<path d="M${ox},${oy} Q${cx},${(iy + oy) / 2 + B.cao} ${ix},${iy}" fill="none" stroke="${c.toi}" stroke-width="${B.day}" stroke-linecap="round"/>`;
+    }).join('');
+  }
+
+  /* ---------- Chi tiết trên mặt (miễn phí) ---------- */
+  const MARKS = {
+    khong: { name: 'Không', draw: () => '' },
+    'ma-hong': {
+      name: 'Má hồng đậm',
+      draw: () => [64, 136].map((x) => `<ellipse cx="${x}" cy="137" rx="11" ry="6" fill="#ff8f9a" opacity=".55"/>` +
+        `<path d="M${x - 6},138 l3,-5 M${x - 1},139 l3,-5 M${x + 4},139 l3,-5" fill="none" stroke="#ec6f80" stroke-width="1.6" stroke-linecap="round"/>`).join('')
     },
+    'tan-nhang': {
+      name: 'Tàn nhang',
+      draw: (skin) => [[60, 131], [66, 128], [71, 133], [64, 135], [140, 131], [134, 128], [129, 133], [136, 135]]
+        .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="${tron(skin.shade, '#5b4339', 0.35)}"/>`).join('')
+    },
+    'not-ruoi': { name: 'Nốt ruồi duyên', draw: () => `<circle cx="118" cy="149" r="1.9" fill="#4a332b"/>` },
+    urgo: {
+      name: 'Miếng dán urgo',
+      draw: () => `<g transform="rotate(-20 138 134)"><rect x="126" y="129" width="24" height="10" rx="5" fill="#f3d2a6" stroke="${VIEN}" stroke-width="1.6"/>` +
+        `<rect x="134" y="129" width="8" height="10" fill="#e8bd8a"/><circle cx="130" cy="134" r=".9" fill="${VIEN}"/><circle cx="146" cy="134" r=".9" fill="${VIEN}"/></g>`
+    },
+    sao: { name: 'Ngôi sao trên má', draw: () => lapLanh(140, 135, 7.5, '#ffd766') }
+  };
+
+  /* ---------- Biểu cảm: mắt, mày, miệng và hiệu ứng (dùng làm trạng thái trong phòng học) ---------- */
+  const mieng = {
+    cuoi: () => `<path d="M89,139 Q100,154 111,139 Z" fill="${MIENG}" ${SV}/><path d="M94,146 Q100,150 106,146 Q100,143 94,146 Z" fill="${LUOI}"/>`,
+    haMo: () => `<path d="M85,136 Q100,162 115,136 Z" fill="${MIENG}" ${SV}/><path d="M92,149 Q100,156 108,149 Q100,145 92,149 Z" fill="${LUOI}"/>`,
+    ngap: () => `<ellipse cx="100" cy="145" rx="4.5" ry="5.5" fill="${MIENG}" ${SV}/>`,
+    meu: () => `<path d="M90,148 Q100,139 110,148" ${LV}/>`,
+    nhech: () => `<path d="M91,145 Q103,149 112,139" ${LV}/>`,
+    tronO: () => `<ellipse cx="100" cy="146" rx="6.5" ry="8.5" fill="${MIENG}" ${SV}/>`,
+    mim: () => `<path d="M92,144 Q100,142 108,144" ${LV}/>`
+  };
+  const FACES = {
+    'vui-ve': { name: 'Vui vẻ', mat: 'mo', may: 'binh', draw: () => mieng.cuoi(), them: () => '' },
     'hao-huc': {
-      name: 'Háo hức',
-      draw: () =>
-        `<path d="M66,83 Q78,74 90,83 M110,83 Q122,74 134,83" ${LINE}/>` +
-        eye(78, 104, 8, 10.5) + eye(122, 104, 8, 10.5) +
-        `<circle cx="81" cy="109" r="1.8" fill="#fff"/><circle cx="125" cy="109" r="1.8" fill="#fff"/>` +
-        `<path d="M86,120 Q100,144 114,120 Z" fill="#7a2d3a" ${S}/>` +
-        `<path d="M93,131 Q100,126 107,131 Q100,138 93,131 Z" fill="#ff8a8a"/>` +
-        blush(0.75) +
-        star(26, 52, 11, '#ffd766') + star(176, 40, 13, '#ffd766') + star(182, 78, 7, '#ffffff')
+      name: 'Háo hức', mat: 'sao', may: 'nhuong', draw: () => mieng.haMo(),
+      them: () => lapLanh(30, 64, 9) + lapLanh(170, 58, 7) + lapLanh(160, 30, 5)
     },
     'buon-ngu': {
-      name: 'Buồn ngủ',
-      draw: () =>
-        `<path d="M68,92 L88,94 M112,94 L132,92" ${LINE}/>` +
-        `<path d="M69,104 Q78,113 87,104 Z M113,104 Q122,113 131,104 Z" fill="${INK}" ${S}/>` +
-        `<ellipse cx="100" cy="126" rx="5.5" ry="6.5" fill="#7a2d3a" ${S}/>` +
-        blush(0.3) +
-        `<g font-family="inherit" font-weight="800" fill="#5a7bd6" stroke="#fff" stroke-width="1" paint-order="stroke">` +
-        `<text x="160" y="52" font-size="24">Z</text><text x="178" y="32" font-size="17">z</text><text x="190" y="18" font-size="12">z</text></g>`
+      name: 'Buồn ngủ', mat: 'nham', may: 'thugian', draw: () => mieng.ngap(),
+      them: () => `<text x="150" y="70" font-family="inherit" font-weight="800" font-size="20" fill="#7c8fd6" stroke="${VIEN}" stroke-width=".6">z</text>` +
+        `<text x="164" y="52" font-family="inherit" font-weight="800" font-size="15" fill="#7c8fd6" stroke="${VIEN}" stroke-width=".5">z</text>`
     },
     'buon-ba': {
-      name: 'Buồn bã',
-      draw: () =>
-        `<path d="M66,91 Q78,86 90,82 M110,82 Q122,86 134,91" ${LINE}/>` +
-        eye(78, 105, 6, 8) + eye(122, 105, 6, 8) +
-        `<path d="M88,130 Q100,120 112,130" ${LINE}/>` +
-        `<path d="M134,114 Q141,125 134,129 Q127,125 134,114 Z" fill="#6ec3f4" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`
+      name: 'Buồn bã', mat: 'mo', may: 'lo', draw: () => mieng.meu(),
+      them: () => `<path d="M70,132 Q65,142 70,146 Q75,142 70,132 Z" fill="#9ad8ff" stroke="${VIEN}" stroke-width="1.6"/>`
+    },
+    'tu-tin': {
+      name: 'Tự tin', mat: 'nheo', may: 'lech', draw: () => mieng.nhech(),
+      them: () => lapLanh(164, 70, 8) + lapLanh(176, 54, 4.5)
+    },
+    'ngac-nhien': {
+      name: 'Ngạc nhiên', mat: 'to', may: 'nhuong', draw: () => mieng.tronO(),
+      them: () => `<path d="M156,46 l4,-12 M166,54 l10,-6 M170,66 l10,0" fill="none" stroke="${VIEN}" stroke-width="2.6" stroke-linecap="round"/>`
+    },
+    'tap-trung': {
+      name: 'Tập trung', mat: 'nheo', may: 'nhiu', draw: () => mieng.mim(),
+      them: () => `<path d="M154,84 Q147,95 154,100 Q161,95 154,84 Z" fill="#a9e2ff" stroke="${VIEN}" stroke-width="1.6"/>`
     }
   };
 
+  /* ---------- Phụ kiện (mua bằng điểm chăm chỉ) ---------- */
+  const hoa = (x, y, mau) =>
+    [0, 72, 144, 216, 288].map((g) => {
+      const r = (g * Math.PI) / 180;
+      return `<circle cx="${(x + Math.cos(r) * 4.5).toFixed(1)}" cy="${(y + Math.sin(r) * 4.5).toFixed(1)}" r="4" fill="${mau}" stroke="${VIEN}" stroke-width="1.2"/>`;
+    }).join('') + `<circle cx="${x}" cy="${y}" r="2.6" fill="#ffd766"/>`;
   const ACCESSORIES = {
     'khong': { name: 'Không đeo', price: 0, draw: () => '' },
     'kinh-tron': {
       name: 'Kính tròn', price: 60,
       draw: () =>
-        `<circle cx="78" cy="104" r="15" fill="#ffffff" fill-opacity=".22" ${S}/>` +
-        `<circle cx="122" cy="104" r="15" fill="#ffffff" fill-opacity=".22" ${S}/>` +
-        `<path d="M93,102 Q100,98 107,102 M63,102 L46,98 M137,102 L154,98" ${LINE}/>`
+        `<circle cx="78" cy="122" r="14" fill="#ffffff" fill-opacity=".22" ${SV}/><circle cx="122" cy="122" r="14" fill="#ffffff" fill-opacity=".22" ${SV}/>` +
+        `<path d="M92,120 Q100,115 108,120 M64,119 L44,115 M136,119 L156,115" ${LV}/>` +
+        `<path d="M70,114 l6,-3 M114,114 l6,-3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>`
     },
-    'tai-nghe': {
-      name: 'Tai nghe', price: 100,
+    'kinh-vuong': {
+      name: 'Kính vuông', price: 70,
       draw: () =>
-        `<path d="M40,96 Q38,20 100,20 Q162,20 160,96" fill="none" stroke="${INK}" stroke-width="11" stroke-linecap="round"/>` +
-        `<path d="M40,96 Q38,20 100,20 Q162,20 160,96" fill="none" stroke="#ef6f5e" stroke-width="5.5" stroke-linecap="round"/>` +
-        `<rect x="28" y="84" width="20" height="36" rx="9" fill="#ef6f5e" ${S}/>` +
-        `<rect x="152" y="84" width="20" height="36" rx="9" fill="#ef6f5e" ${S}/>`
+        `<rect x="62" y="110" width="31" height="24" rx="7" fill="#ffffff" fill-opacity=".2" stroke="#2f2f3a" stroke-width="3.2"/>` +
+        `<rect x="107" y="110" width="31" height="24" rx="7" fill="#ffffff" fill-opacity=".2" stroke="#2f2f3a" stroke-width="3.2"/>` +
+        `<path d="M93,119 Q100,115 107,119 M62,118 L44,114 M138,118 L156,114" fill="none" stroke="#2f2f3a" stroke-width="3" stroke-linecap="round"/>`
     },
-    'mu-luoi-trai': {
-      name: 'Mũ lưỡi trai', price: 140,
-      draw: () =>
-        `<path d="M44,74 Q40,22 100,22 Q160,22 156,74 Z" fill="#4f8fd8" ${S}/>` +
-        `<path d="M44,74 Q104,58 176,76 Q182,86 170,86 L44,80 Z" fill="#3d7fc4" ${S}/>` +
-        `<circle cx="100" cy="24" r="5" fill="#ffd766" ${S}/>`
+    'kep-toc-sao': {
+      name: 'Kẹp tóc ngôi sao', price: 50,
+      draw: () => `<rect x="46" y="80" width="26" height="6" rx="3" fill="#ff8fb1" stroke="${VIEN}" stroke-width="1.8" transform="rotate(-24 59 83)"/>` + lapLanh(70, 74, 9)
     },
     'no-buoc-toc': {
       name: 'Nơ buộc tóc', price: 80,
       draw: () =>
-        `<path d="M132,40 L112,28 Q108,40 114,52 Z M132,40 L152,28 Q156,40 150,52 Z" fill="${RED}" ${S}/>` +
-        `<circle cx="132" cy="40" r="6" fill="#ff8a8a" ${S}/>`
+        `<path d="M142,50 L120,38 Q116,50 122,62 Z M142,50 L164,38 Q168,50 162,62 Z" fill="${RED}" ${SV}/>` +
+        `<circle cx="142" cy="50" r="6.5" fill="#ff8a8a" ${SV}/>`
+    },
+    'tai-nghe': {
+      name: 'Tai nghe', price: 100,
+      draw: () =>
+        `<path d="M40,108 Q38,24 100,24 Q162,24 160,108" fill="none" stroke="${VIEN}" stroke-width="11" stroke-linecap="round"/>` +
+        `<path d="M40,108 Q38,24 100,24 Q162,24 160,108" fill="none" stroke="#ef6f5e" stroke-width="5.5" stroke-linecap="round"/>` +
+        `<rect x="27" y="98" width="21" height="36" rx="10" fill="#ef6f5e" ${SV}/><rect x="152" y="98" width="21" height="36" rx="10" fill="#ef6f5e" ${SV}/>`
+    },
+    'mu-len': {
+      name: 'Mũ len', price: 120,
+      draw: () =>
+        `<path d="M36,90 Q34,24 100,24 Q166,24 164,90 Z" fill="#ef6f5e" ${SV}/>` +
+        `<path d="M64,40 v40 M82,32 v48 M100,28 v52 M118,32 v48 M136,40 v40" stroke="#d6574a" stroke-width="2" stroke-linecap="round"/>` +
+        `<rect x="32" y="80" width="136" height="20" rx="9" fill="#d95a4a" ${SV}/>` +
+        `<circle cx="100" cy="22" r="12" fill="#ffffff" ${SV}/>`
+    },
+    'mu-luoi-trai': {
+      name: 'Mũ lưỡi trai', price: 140,
+      draw: () =>
+        `<path d="M40,86 Q36,28 100,28 Q164,28 160,86 Z" fill="#4f8fd8" ${SV}/>` +
+        `<path d="M40,86 Q104,68 180,88 Q186,98 172,98 L40,94 Z" fill="#3d7fc4" ${SV}/>` +
+        `<circle cx="100" cy="30" r="5" fill="#ffd766" ${SV}/>`
+    },
+    'tai-meo': {
+      name: 'Băng đô tai mèo', price: 150,
+      draw: () =>
+        `<path d="M50,58 L46,22 L80,42 Z M150,58 L154,22 L120,42 Z" fill="#3a2f35" ${SV}/>` +
+        `<path d="M55,50 L53,32 L70,43 Z M145,50 L147,32 L130,43 Z" fill="#ff9ab0"/>` +
+        `<path d="M42,96 Q40,38 100,38 Q160,38 158,96" fill="none" stroke="#3a2f35" stroke-width="7" stroke-linecap="round"/>`
+    },
+    'vong-hoa': {
+      name: 'Vòng hoa', price: 180,
+      draw: () => {
+        const dd = [[44, 82, '#ff9ab0'], [56, 62, '#ffffff'], [74, 48, '#ffd766'], [94, 42, '#ff9ab0'], [114, 42, '#ffffff'], [134, 48, '#ffd766'], [150, 62, '#ff9ab0'], [158, 82, '#ffffff']];
+        return `<path d="M42,92 Q40,40 100,38 Q160,40 158,92" fill="none" stroke="#5fae6a" stroke-width="3.5" stroke-linecap="round"/>` +
+          [[64, 56], [104, 38], [142, 54]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="3" fill="#6bbf59" stroke="${VIEN}" stroke-width="1.2" transform="rotate(-20 ${x} ${y})"/>`).join('') +
+          dd.map(([x, y, m]) => hoa(x, y, m)).join('');
+      }
     }
   };
 
+  /* ---------- Thân: đồng phục học sinh ---------- */
   function bodyMarkup(gender, skin) {
-    const arm =
-      `<path d="M68,158 Q50,162 47,186 L45,202 L63,204 L68,182 Z" fill="${SHIRT}" ${S}/>` +
-      `<path d="M45,202 L63,204 L61,226 Q53,236 45,226 Z" fill="${skin.base}" ${S}/>`;
-    const arms = arm + `<g transform="translate(200,0) scale(-1,1)">${arm}</g>`;
-    const torso = `<path d="M64,178 Q64,152 86,150 L114,150 Q136,152 136,178 L132,236 Q100,242 68,236 Z" fill="${SHIRT}" ${S}/>`;
-    const collar =
-      `<path d="M86,150 L100,166 L90,174 L80,156 Z M114,150 L100,166 L110,174 L120,156 Z" fill="${SHIRT}" ${S}/>`;
-    const shoe = (x) => `<rect x="${x}" y="292" width="34" height="17" rx="8" fill="${INK}"/>`;
+    const tay =
+      `<path d="M70,168 Q54,172 50,192 L48,204 L66,206 L70,186 Z" fill="${SHIRT}" ${SV}/>` +
+      `<path d="M48,204 L66,206 L64,222 Q56,232 48,222 Z" fill="${skin.base}" ${SV}/>`;
+    const haiTay = tay + `<g transform="translate(200,0) scale(-1,1)">${tay}</g>`;
+    const than =
+      `<path d="M66,186 Q66,162 88,160 L112,160 Q134,162 134,186 L130,232 Q100,238 70,232 Z" fill="${SHIRT}" ${SV}/>` +
+      `<path d="M120,165 Q131,172 131,188 L128,230 Q122,232 116,232 Q123,200 120,165 Z" fill="${SHIRT_SHADE}"/>`;
+    const co = `<path d="M86,160 L100,174 L90,182 L80,164 Z M114,160 L100,174 L110,182 L120,164 Z" fill="${SHIRT}" ${SV}/>`;
+    const giay = (x) => `<rect x="${x}" y="284" width="32" height="17" rx="8" fill="${VIEN}"/><rect x="${x + 4}" y="286" width="10" height="4" rx="2" fill="#fff" opacity=".35"/>`;
 
     if (gender === 'female') {
-      const leg = (x) =>
-        `<rect x="${x}" y="250" width="18" height="46" fill="${skin.base}" ${S}/>` +
-        `<rect x="${x}" y="276" width="18" height="20" fill="#ffffff" ${S}/>`;
+      const chan = (x) =>
+        `<rect x="${x}" y="256" width="17" height="32" fill="${skin.base}" ${SV}/>` +
+        `<rect x="${x}" y="272" width="17" height="16" fill="#ffffff" ${SV}/>`;
       return (
-        arms + leg(76) + leg(106) + shoe(66) + shoe(100) + torso +
-        `<path d="M68,222 L132,222 L144,262 Q100,272 56,262 Z" fill="${NAVY}" ${S}/>` +
-        `<path d="M84,226 L78,264 M100,226 L100,267 M116,226 L122,264" ${LINE} opacity=".35"/>` +
-        `<rect x="66" y="218" width="68" height="9" rx="3" fill="${NAVY}" ${S}/>` +
-        collar +
-        `<path d="M100,170 L86,162 L88,180 Z M100,170 L114,162 L112,180 Z" fill="${RED}" ${S}/>` +
-        `<circle cx="100" cy="170" r="4.5" fill="${RED}" ${S}/>`
+        haiTay + chan(79) + chan(104) + giay(70) + giay(98) + than +
+        `<path d="M68,224 L132,224 L144,260 Q100,270 56,260 Z" fill="${NAVY}" ${SV}/>` +
+        `<path d="M84,228 L78,262 M100,228 L100,265 M116,228 L122,262" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".25"/>` +
+        `<rect x="66" y="220" width="68" height="9" rx="4" fill="${NAVY}" ${SV}/>` +
+        co +
+        `<path d="M100,176 L85,167 L87,186 Z M100,176 L115,167 L113,186 Z" fill="${RED}" ${SV}/>` +
+        `<circle cx="100" cy="176" r="4.5" fill="${RED}" ${SV}/>`
       );
     }
     return (
-      arms +
-      `<rect x="72" y="226" width="26" height="70" rx="7" fill="${NAVY}" ${S}/>` +
-      `<rect x="102" y="226" width="26" height="70" rx="7" fill="${NAVY}" ${S}/>` +
-      shoe(66) + shoe(100) + torso +
-      `<rect x="68" y="226" width="64" height="9" rx="3" fill="${INK}"/>` +
-      collar +
-      `<path d="M95,166 L105,166 L108,198 L100,208 L92,198 Z" fill="${NAVY}" ${S}/>`
+      haiTay +
+      `<rect x="72" y="228" width="26" height="60" rx="8" fill="${NAVY}" ${SV}/>` +
+      `<rect x="102" y="228" width="26" height="60" rx="8" fill="${NAVY}" ${SV}/>` +
+      giay(66) + giay(102) + than +
+      `<rect x="68" y="226" width="64" height="8" rx="3" fill="${VIEN}"/>` +
+      co +
+      `<path d="M95,168 L105,168 L108,200 L100,210 L92,200 Z" fill="${NAVY}" ${SV}/>`
     );
   }
 
   function characterInner(opts) {
     const o = normalizeCharacter(opts);
     const skin = SKIN_TONES[o.skin];
-    const hairHex = HAIR_COLORS[o.hairColor].hex;
+    const c = mauToc(HAIR_COLORS[o.hairColor].hex);
     const hair = HAIR[o.gender][o.hair];
+    const f = FACES[o.expression];
     return (
-      hair.back(hairHex) +
+      hair.back(c) +
       bodyMarkup(o.gender, skin) +
-      `<rect x="90" y="136" width="20" height="22" fill="${skin.shade}" ${S}/>` +
-      `<circle cx="45" cy="101" r="9" fill="${skin.base}" ${S}/><circle cx="155" cy="101" r="9" fill="${skin.base}" ${S}/>` +
-      `<ellipse cx="100" cy="96" rx="56" ry="53" fill="${skin.base}" ${S}/>` +
-      FACES[o.expression].draw() +
-      hair.front(hairHex) +
-      ACCESSORIES[o.accessory].draw()
+      `<rect x="91" y="148" width="18" height="18" fill="${skin.shade}" ${SV}/>` +
+      `<circle cx="41" cy="116" r="9" fill="${skin.base}" ${SV}/><circle cx="159" cy="116" r="9" fill="${skin.base}" ${SV}/>` +
+      `<path d="M39,113 q3,4 0,7 M161,113 q-3,4 0,7" fill="none" stroke="${skin.shade}" stroke-width="2" stroke-linecap="round"/>` +
+      `<ellipse cx="100" cy="104" rx="60" ry="54" fill="${skin.base}" ${SV}/>` +
+      `<ellipse cx="64" cy="136" rx="9" ry="5" fill="#ff9aa2" opacity=".38"/><ellipse cx="136" cy="136" rx="9" ry="5" fill="#ff9aa2" opacity=".38"/>` +
+      MARKS[o.mark].draw(skin) +
+      veMat(o.eyes, f.mat, skin) +
+      f.draw() +
+      hair.front(c) +
+      veMay(o.brows, f.may, c) + // vẽ đè lên tóc mái để luôn thấy lông mày (kiểu chibi)
+      ACCESSORIES[o.accessory].draw() +
+      f.them()
     );
   }
 
@@ -248,6 +495,9 @@
     if (!HAIR_COLORS[o.hairColor]) o.hairColor = 'den';
     if (!SKIN_TONES[o.skin]) o.skin = 'sang';
     if (!ACCESSORIES[o.accessory]) o.accessory = 'khong';
+    if (!EYES[o.eyes]) o.eyes = 'tron';
+    if (!BROWS[o.brows]) o.brows = 'cong';
+    if (!MARKS[o.mark]) o.mark = 'khong';
     return o;
   }
 
@@ -532,7 +782,7 @@
   /* ============================================================
    * 5. DANH MỤC LỰA CHỌN — dùng để dựng màn hình tạo nhân vật và cửa hàng
    * ============================================================ */
-  const toList = (obj) => Object.keys(obj).map((id) => Object.assign({ id }, obj[id], { draw: undefined, back: undefined, front: undefined }));
+  const toList = (obj) => Object.keys(obj).map((id) => Object.assign({ id }, obj[id], { draw: undefined, back: undefined, front: undefined, them: undefined }));
 
   const CHARACTER_OPTIONS = {
     genders: [{ id: 'male', name: 'Nam' }, { id: 'female', name: 'Nữ' }],
@@ -540,12 +790,16 @@
     expressions: toList(FACES),
     hairColors: toList(HAIR_COLORS),
     skinTones: toList(SKIN_TONES),
+    eyes: toList(EYES),
+    brows: toList(BROWS),
+    marks: toList(MARKS),
     accessories: toList(ACCESSORIES)
   };
 
+  const MAC_DINH_MAT = { eyes: 'tron', brows: 'cong', mark: 'khong' };
   const DEFAULT_CHARACTER = {
-    male: { gender: 'male', hair: 'nam-ngan', expression: 'vui-ve', hairColor: 'den', skin: 'sang', accessory: 'khong' },
-    female: { gender: 'female', hair: 'nu-dai-thang', expression: 'vui-ve', hairColor: 'den', skin: 'sang', accessory: 'khong' }
+    male: { gender: 'male', hair: 'nam-ngan', expression: 'vui-ve', hairColor: 'den', skin: 'sang', accessory: 'khong', ...MAC_DINH_MAT },
+    female: { gender: 'female', hair: 'nu-dai-thang', expression: 'vui-ve', hairColor: 'den', skin: 'sang', accessory: 'khong', ...MAC_DINH_MAT }
   };
 
   root.PeerAssets = {

@@ -31,7 +31,7 @@ if (!/^[A-Z0-9]{6}$/.test(ma)) {
 const de = await taiJSON('data/de-mau.json').catch(() => ({ subjects: [] }));
 const tenMon = Object.fromEntries(de.subjects.map((m) => [m.id, m.name]));
 const TRANG_THAI = Object.fromEntries(PeerAssets.CHARACTER_OPTIONS.expressions.map((x) => [x.id, x.name]));
-const BIEU_TUONG = { 'vui-ve': '😊', 'hao-huc': '🤩', 'buon-ngu': '😴', 'buon-ba': '😟' };
+const BIEU_TUONG = { 'vui-ve': '😊', 'hao-huc': '🤩', 'buon-ngu': '😴', 'buon-ba': '😟', 'tu-tin': '😎', 'ngac-nhien': '😮', 'tap-trung': '🧐' };
 
 /* ---------- Vào phòng ---------- */
 let phong;

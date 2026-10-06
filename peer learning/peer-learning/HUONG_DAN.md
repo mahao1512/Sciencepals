@@ -144,7 +144,9 @@ Nội dung trò chuyện nằm ở **Realtime Database → Data → phong → (m
 - Nút **📅 100 ngày** mở trang tổng hợp 100 ngày gần nhất; chạm một ngày để mở lại trang đó.
 - Nhật ký **chỉ chủ tài khoản đọc được**, kể cả các bạn trong phòng học. Thầy cô cũng không xem được từ trang web. Trong Firebase Console, người quản lí dự án vẫn thấy được dữ liệu, nên hãy nói trước với học sinh điều này.
 
-> **Đã dán luật Firestore từ trước?** Hãy dán lại toàn bộ `firestore.rules` và bấm **Publish**, vì luật mới có thêm phần sổ tay (`nhatKy`). Thiếu bước này, sổ tay sẽ báo *"Chưa mở được sổ tay"*.
+> **Đã dán luật từ trước?** Mỗi lần cập nhật trang, hãy dán lại **cả hai** file luật và bấm **Publish**:
+> - `firestore.rules`: có thêm phần sổ tay (`nhatKy`). Thiếu thì sổ tay báo *"Chưa mở được sổ tay"*.
+> - `database.rules.json`: có thêm 3 biểu cảm mới (Tự tin, Ngạc nhiên, Tập trung) cho trạng thái trong phòng học. Thiếu thì chọn các trạng thái này sẽ không lưu được.
 
 ## Những chỗ bạn có thể tự sửa
 

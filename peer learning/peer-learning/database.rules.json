@@ -31,7 +31,7 @@
             ".write": "auth != null && auth.uid === $uid && (!newData.exists() || newData.parent().parent().child('cho/' + newData.child('cho').val()).val() === auth.uid)",
             ".validate": "!newData.exists() || newData.hasChildren(['ten', 'nhanVat', 'ban', 'trangThai', 'cho'])",
             "ten": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24" },
-            "trangThai": { ".validate": "newData.val() === 'vui-ve' || newData.val() === 'hao-huc' || newData.val() === 'buon-ngu' || newData.val() === 'buon-ba'" },
+            "trangThai": { ".validate": "newData.isString() && newData.val().matches(/^(vui-ve|hao-huc|buon-ngu|buon-ba|tu-tin|ngac-nhien|tap-trung)$/)" },
             "cho": { ".validate": "newData.isString() && newData.val().matches(/^[0-7]$/)" }
           }
         },
