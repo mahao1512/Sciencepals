@@ -1,0 +1,50 @@
+/* cua-hang.css — Cửa hàng. */
+
+.ch-dau { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.ch-dau h1 { font-size: 1.6rem; }
+.ch-dau p.muted { max-width: 60ch; }
+.ch-vi {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--r-full);
+  background: var(--brand-50); color: var(--brand-700); font-weight: 700; white-space: nowrap;
+}
+.ch-vi b { font-size: 1.4rem; }
+:root.dark .ch-vi { background: rgba(30, 64, 175, .35); color: var(--brand-100); }
+.ch-tabs { margin-bottom: 16px; max-width: 620px; }
+@media (max-width: 440px) { .ch-tabs button { font-size: .8rem; padding: 0 2px; } .ch-tabs button i { display: none; } }
+.ch-luoi.ao { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+/* Xem trước tường: một mảng tường + sàn gỗ */
+.ch-hinh.tuong { padding: 0; overflow: hidden; background: var(--room-floor); }
+.ch-tuong { height: 110px; border-bottom: 4px solid var(--room-floor-edge); }
+.ch-hinh.tuong::after { content: ''; display: block; height: 26px; }
+/* Xem trước kệ sách */
+.ch-hinh.ke { background: var(--room-wall); padding: 10px 28px 6px; }
+.ch-hinh.ke svg { max-height: 170px; width: auto; margin: 0 auto; }
+
+.ch-luoi { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.ch-luoi.phuKien, .ch-luoi.mauToc { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.ch-tabs { flex-wrap: wrap; }
+.ch-tabs button { flex: 1 1 auto; }
+@media (max-width: 440px) { .ch-luoi, .ch-luoi.ao, .ch-luoi.tuong, .ch-luoi.ke, .ch-luoi.phuKien, .ch-luoi.mauToc { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+.ch-mon { display: flex; flex-direction: column; gap: 4px; padding: 12px; text-align: center; }
+.ch-mon.dang-dung { border: 2px solid var(--brand-600); }
+.ch-hinh {
+  background: linear-gradient(var(--room-wall) 0 70%, var(--room-floor) 70%); border: 2.5px solid var(--ink);
+  border-radius: var(--r-lg); padding: 10px 8px 4px; margin-bottom: 6px;
+}
+.ch-hinh.nv { background: var(--room-wall); padding: 8px 18px 0; }
+.ch-hinh svg { width: 100%; height: auto; display: block; }
+.ch-mon h3 { font-size: 1rem; }
+.ch-gia { font-weight: 800; color: var(--text-muted); font-size: .85rem; }
+.ch-nut { margin-top: auto; padding-top: 6px; display: grid; gap: 4px; }
+.ch-nut .btn { width: 100%; }
+.ch-thieu { color: var(--text-muted); font-size: .75rem; }
+.ch-dang-dung { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--tap); font-weight: 700; color: var(--brand-600); }
+:root.dark .ch-dang-dung { color: var(--brand-400); }
+.ch-ghi { margin-top: 14px; }
+.ch-xac-nhan { display: flex; gap: 14px; align-items: center; }
+.ch-xac-nhan .ch-hinh { flex: 0 0 120px; margin: 0; }
+@media (max-width: 440px) {
+  .ch-mon { padding: 10px; }
+  .ch-mon .small.muted { display: none; }
+  .ch-xac-nhan { flex-direction: column; text-align: center; }
+}

@@ -1,0 +1,53 @@
+/* ban-be.css — Trang Bạn bè & tin nhắn riêng. */
+
+.bb { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+.bb-ds { padding: 16px; }
+.bb-ds h1 { font-size: 1.4rem; margin-bottom: 6px; }
+.bb-tim-id { margin: 8px 0 4px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.bb-nhom { font-size: .95rem; color: var(--text-muted); margin: 14px 0 6px; display: flex; align-items: center; gap: 6px; }
+.bb-so { background: var(--surface-2); border-radius: var(--r-full); padding: 0 8px; font-size: .75rem; }
+.bb-ds-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.bb-muc {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border-radius: var(--r-md);
+  background: none; border: 0; text-align: left; color: var(--text); font: inherit;
+}
+button.bb-muc { cursor: pointer; min-height: 56px; }
+button.bb-muc:hover, button.bb-muc.dang-mo { background: var(--surface-2); }
+.bb-hinh { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--room-wall); border: 2px solid var(--border-strong); }
+.bb-hinh svg { width: 100%; height: 100%; display: block; }
+.bb-chu { flex: 1; min-width: 0; display: grid; }
+.bb-chu b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-chu small { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-muc.moi .bb-chu small { color: var(--text-strong); font-weight: 700; }
+.bb-cham { width: 10px; height: 10px; border-radius: 50%; background: var(--brand-600); flex: 0 0 auto; }
+.bb-nut { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+
+.bb-chat { padding: 0; min-height: 520px; display: flex; flex-direction: column; overflow: hidden; }
+.bb-chua-chon { margin: 16px; }
+.bb-cuoc { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.bb-dau { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.bb-dau h2 { font-size: 1.05rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-dau-hinh { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--room-wall); border: 2px solid var(--border-strong); }
+.bb-dau-hinh svg { width: 100%; height: 100%; display: block; }
+.bb-ve { display: none; }
+.bb-tin { list-style: none; margin: 0; padding: 12px; flex: 1; min-height: 360px; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.bb-tin .tin { align-self: flex-start; max-width: 80%; background: var(--surface-2); border-radius: 4px var(--r-lg) var(--r-lg) var(--r-lg); padding: 6px 12px; }
+.bb-tin .tin.cua-toi { align-self: flex-end; background: var(--brand-600); color: #fff; border-radius: var(--r-lg) 4px var(--r-lg) var(--r-lg); }
+.bb-tin .tin-dau { display: flex; align-items: center; gap: 8px; font-size: .72rem; opacity: .75; }
+.bb-tin .tin p { overflow-wrap: anywhere; }
+.bb-tin .tin-bao { margin-left: auto; border: 0; background: none; color: inherit; cursor: pointer; width: 30px; height: 30px; border-radius: var(--r-full); margin-right: -8px; }
+.bb-tin .tin-bao:hover { color: var(--danger); background: var(--border); }
+.bb-tin .tin-trong { margin: auto; color: var(--text-muted); text-align: center; }
+.bb-gui { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); }
+.bb-gui .input { min-width: 0; }
+.bb-trich { margin: 8px 0 12px; padding: 8px 12px; border-left: 4px solid var(--danger); background: var(--surface-2); border-radius: var(--r-sm); }
+
+/* Điện thoại: một cột, mở cuộc trò chuyện thì ẩn danh sách */
+@media (max-width: 760px) {
+  .bb { grid-template-columns: 1fr; }
+  .bb.dang-chat .bb-ds { display: none; }
+  .bb:not(.dang-chat) .bb-chat { display: none; }
+  .bb-ve { display: inline-flex; }
+  .bb-chu-nut { display: none; }
+  .bb-tin { max-height: calc(100vh - 290px); min-height: 280px; }
+}

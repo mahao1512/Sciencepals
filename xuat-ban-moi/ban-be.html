@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bạn bè – Học Cùng Bạn</title>
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/chung.css">
+  <link rel="stylesheet" href="css/ban-be.css">
+  <script src="assets/peer-assets.js"></script>
+  <script type="module" src="js/ban-be.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Bỏ qua, tới nội dung chính</a>
+  <header id="site-header" class="site-header"></header>
+  <main id="noi-dung" tabindex="-1">
+    <div class="bb" id="bb">
+      <aside class="card bb-ds" aria-labelledby="bb-td">
+        <h1 id="bb-td">Bạn bè</h1>
+        <div id="bb-tim-id" class="bb-tim-id"></div>
+        <div id="bb-danh-sach"><p class="muted small" role="status">Đang tải danh sách bạn bè…</p></div>
+      </aside>
+      <section class="card bb-chat" id="bb-chat" aria-label="Trò chuyện riêng">
+        <div class="empty bb-chua-chon" id="bb-chua-chon"><b>Chọn một bạn để nhắn tin.</b>Tin nhắn riêng chỉ hai bạn đọc được. Hãy giữ lời nói lịch sự nhé!</div>
+        <div class="bb-cuoc" id="bb-cuoc" hidden>
+          <div class="bb-dau">
+            <button type="button" class="icon-btn bb-ve" id="bb-ve" aria-label="Quay lại danh sách bạn bè"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
+            <div class="bb-dau-hinh" id="bb-dau-hinh" aria-hidden="true"></div>
+            <h2 id="bb-ten"></h2>
+            <button type="button" class="btn btn-ghost btn-nho" id="bb-huy-ban" aria-label="Huỷ kết bạn" title="Huỷ kết bạn"><i class="fas fa-user-minus" aria-hidden="true"></i><span class="bb-chu-nut"> Huỷ kết bạn</span></button>
+          </div>
+          <ol class="bb-tin" id="bb-tin" role="log" aria-live="polite" aria-label="Tin nhắn"></ol>
+          <form class="bb-gui" id="bb-gui" novalidate>
+            <label class="sr-only" for="bb-o">Viết tin nhắn</label>
+            <input class="input" id="bb-o" maxlength="500" autocomplete="off" placeholder="Nhắn cho bạn…">
+            <button class="btn btn-primary" type="submit" aria-label="Gửi tin nhắn"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    // Mở bằng cách nháy đúp file (file://) thì trình duyệt chặn JavaScript dạng module: báo cách mở đúng
+    if (location.protocol === 'file:') {
+      document.getElementById('noi-dung').innerHTML = '<div class="card" style="max-width:560px;margin:24px auto"><h1 style="font-size:1.3rem">Trang cần mở qua máy chủ</h1><p style="margin-top:8px">Bạn đang mở file trực tiếp nên trình duyệt chặn phần chạy của trang. Hãy mở bằng <b>Live Server</b>: trong VS Code, bấm chuột phải vào <code>peer-learning/index.html</code> → <b>Open with Live Server</b>. Hoặc mở đường link GitHub Pages của trang.</p></div>';
+    }
+  </script>
+  <noscript><p style="padding:16px;text-align:center">Trang cần bật JavaScript để chạy.</p></noscript>
+</body>
+</html>
