@@ -1,0 +1,25 @@
+/* kiem-tra-tuan.css — Bài test tuần (dùng chung kiểu câu hỏi với kiem-tra.css). */
+
+.ktt-td { font-size: 1.05rem; margin: 18px 0 8px; }
+.ktt-mon { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; list-style: none; padding: 0; margin: 0; }
+.ktt-mon li { display: grid; padding: 8px 12px; border: 2px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface); }
+.ktt-mon small { color: var(--text-muted); font-size: .75rem; }
+.ktt-ban { padding-left: 20px; margin: 0; }
+.ktt-ban li + li { margin-top: 4px; }
+
+.ktt-ket-luan { margin: 10px 0 14px; padding: 12px 14px; border-radius: var(--r-lg); background: var(--brand-50); font-weight: 600; }
+:root.dark .ktt-ket-luan { background: rgba(30, 64, 175, .25); }
+.ktt-bang-khung { overflow-x: auto; }
+.ktt-bang { width: 100%; border-collapse: collapse; font-size: .92rem; min-width: 560px; }
+.ktt-bang th, .ktt-bang td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: center; }
+.ktt-bang th[scope="row"], .ktt-bang thead th:first-child { text-align: left; }
+.ktt-bang thead th { font-size: .78rem; color: var(--text-muted); font-weight: 800; }
+.ktt-chenh { font-size: .78rem; font-weight: 800; padding: 1px 6px; border-radius: var(--r-full); }
+.ktt-chenh.tang { background: #dcfce7; color: #166534; }
+.ktt-chenh.giam { background: #fee2e2; color: #991b1b; }
+.ktt-dg { font-weight: 700; white-space: nowrap; }
+.ktt-dg.tot { color: #15803d; }
+.ktt-dg.chua { color: var(--danger); }
+:root.dark .ktt-dg.tot { color: #4ade80; }
+.ktt-ban-kq { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
+.ktt-ban-kq li { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface-2); }

@@ -1,9 +1,9 @@
 /*
  * trang-tri-phong.js — Trang trí phòng học chung.
  *  - Phòng có một kiểu tường và một tủ sách chung (các môn trong mon-hoc.json, KHÔNG có Sổ tay cảm xúc).
- *  - Chủ phòng chọn tường và kiểu kệ trong số đồ chủ phòng đã có.
+ *  - Trưởng phòng chọn tường và kiểu kệ trong số đồ trưởng phòng đã có.
  *  - Mỗi người tự đổi bàn mình ngồi, trong số bàn mình đã có.
- *  - Lần đầu chủ phòng vào, phòng lấy luôn tường / kệ đang dùng ở trang chủ của chủ phòng.
+ *  - Lần đầu trưởng phòng vào, phòng lấy luôn tường / kệ đang dùng ở trang chủ của trưởng phòng.
  */
 import { duLieu } from '../data/index.js';
 import { esc, thongBao, moCuaSo } from '../tienich.js';
@@ -39,7 +39,7 @@ export function ganTrangTriPhong({ ma, ctx, laChu }) {
       $('#p-ke').innerHTML = svgKe;
       ganSachSapCo($('#p-ke'));
     }
-    // Chủ phòng vào lần đầu: lấy tường / kệ đang dùng ở trang chủ
+    // Trưởng phòng vào lần đầu: lấy tường / kệ đang dùng ở trang chủ
     if (laChu() && !p.tuong && !p.ke && !daDatMacDinh) {
       daDatMacDinh = true;
       duLieu.trangTriPhong(ma, { tuong: ctx.congKhai.tuong || MAC_DINH.tuong, ke: ctx.congKhai.ke || MAC_DINH.ke }).catch(() => {});
@@ -69,14 +69,14 @@ export function ganTrangTriPhong({ ma, ctx, laChu }) {
     }));
   });
 
-  // Trang trí phòng (chỉ chủ phòng): tường + kiểu kệ, trong số đồ chủ phòng đã có
+  // Trang trí phòng (chỉ trưởng phòng): tường + kiểu kệ, trong số đồ trưởng phòng đã có
   $('#p-trang-tri').addEventListener('click', () => {
-    if (!laChu()) return thongBao('Chỉ chủ phòng mới trang trí được phòng.');
+    if (!laChu()) return thongBao('Chỉ trưởng phòng mới trang trí được phòng.');
     const tuongCo = monDaCo(ctx.rieng, 'tuong');
     const keCo = monDaCo(ctx.rieng, 'ke');
     const sachMau = monHoc.length ? monHoc : [];
     const cs = moCuaSo(
-      `<p class="small muted">Bạn là chủ phòng: chọn tường và kệ sách cho cả phòng trong số đồ bạn đã có. Muốn thêm kiểu mới? Ghé <a href="cua-hang.html" target="_blank" rel="noopener">Cửa hàng</a>.</p>` +
+      `<p class="small muted">Bạn là trưởng phòng: chọn tường và kệ sách cho cả phòng trong số đồ bạn đã có. Muốn thêm kiểu mới? Ghé <a href="cua-hang.html" target="_blank" rel="noopener">Cửa hàng</a>.</p>` +
       `<h3 class="chon-do-td">Tường</h3>` +
       luoiChon(tuongCo, phong?.tuong || MAC_DINH.tuong, (m) => `<span class="mau-tuong" style="background:${PeerAssets.wallBackground(m.id)}" aria-hidden="true"></span>`, 'tuong') +
       `<h3 class="chon-do-td">Kệ sách</h3>` +

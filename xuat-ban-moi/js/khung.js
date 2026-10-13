@@ -60,6 +60,9 @@ export function veDauTrang(ctx) {
         `<li><a href="ban-be.html"><i class="fas fa-comments" aria-hidden="true"></i>Bạn bè & tin nhắn</a></li>` +
         `<li><a href="cua-hang.html"><i class="fas fa-store" aria-hidden="true"></i>Cửa hàng</a></li>` +
         `<li><a href="kiem-tra.html"><i class="fas fa-clipboard-check" aria-hidden="true"></i>Bài kiểm tra đầu vào</a></li>` +
+        `<li><a href="kiem-tra-tuan.html"><i class="fas fa-chart-line" aria-hidden="true"></i>Bài test tuần</a></li>` +
+        `<li><a href="thi-dau.html"><i class="fas fa-trophy" aria-hidden="true"></i>Thi Đấu</a></li>` +
+        `<li class="small muted" style="padding:6px 12px" id="hd-uy-tin"></li>` +
         `<li><button type="button" data-act="dang-xuat"><i class="fas fa-right-from-bracket" aria-hidden="true"></i>Đăng xuất</button></li>` +
         `</ul></div>`
       : '') +
@@ -167,6 +170,22 @@ export async function taiNguCanh(uid, congKhai) {
       location.reload();
     };
   }
+  // Chế độ thử: plDoiGio('2026-10-17T09:00') giả lập giờ khác (để thử Thi Đấu ngoài cuối tuần); plDoiGio() về giờ thật
+  if (duLieu.cheDo === 'local' && duLieu.datLechGio) {
+    window.plDoiGio = (thoiDiem) => {
+      duLieu.datLechGio(thoiDiem ? new Date(thoiDiem).getTime() - Date.now() : 0);
+      location.reload();
+    };
+  }
+  // Uy tín: theo dõi các lần bị trừ, hiện trong trình đơn nhân vật
+  const { batDauUyTin, mucUyTin } = await import('./uy-tin.js');
+  const veUyTin = () => {
+    const el = document.getElementById('hd-uy-tin');
+    if (el && ctx.uyTin) el.innerHTML = `Uy tín: <b>${ctx.uyTin.diem}/100</b> · ${mucUyTin(ctx.uyTin.diem).chu}`;
+  };
+  document.addEventListener('pl:uytin', veUyTin);
+  batDauUyTin(ctx);
+  veUyTin();
   // Theo dõi điểm chăm chỉ thay đổi ở tab khác / máy khác
   duLieu.theoDoiRieng((r) => { ctx.rieng = r; capNhatDauTrang(ctx); document.dispatchEvent(new CustomEvent('pl:rieng')); });
   // Bạn bè: số lời mời kết bạn + cuộc trò chuyện chưa đọc trên nút đầu trang

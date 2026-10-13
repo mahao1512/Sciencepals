@@ -1,13 +1,17 @@
 /*
  * de-bai.js — Thẻ "Đề bài" trong phòng học.
  *  - Chụp đề bằng máy ảnh điện thoại hoặc tải ảnh / PDF (tối đa DE_TOI_DA_TRANG trang).
- *  - Chủ phòng gửi là đề lên ngay; thành viên khác gửi thì chờ chủ phòng duyệt.
+ *  - Trưởng phòng gửi là đề lên ngay; thành viên khác gửi thì chờ trưởng phòng duyệt.
  *  - Ai cũng thấy cùng một đề, mỗi người tự lật trang và phóng to / thu nhỏ.
+ *  - Trưởng phòng ghi chú trực tiếp lên đề (bút, tẩy, 3 màu); cả phòng thấy ngay. Đổi đề thì ghi chú cũ mất.
  */
 import { duLieu } from '../data/index.js';
 import { esc, thongBao, moCuaSo } from '../tienich.js';
 import { DE_TOI_DA_TRANG } from '../config.js';
 import { xuLiFile, xoayTrang } from './xu-li-de.js';
+import { taoBangTrang } from './bang-trang.js';
+
+const MAU_GHI = [{ id: '#dc2626', ten: 'Đỏ' }, { id: '#2563eb', ten: 'Xanh dương' }, { id: '#16a34a', ten: 'Xanh lá' }, { id: '#1e293b', ten: 'Đen' }];
 
 const $ = (s) => document.querySelector(s);
 const tenGon = (s) => String(s || '').replace(/\.[^.]+$/, '').slice(0, 80) || 'Đề bài';
@@ -26,6 +30,12 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
   const daBaoCho = new Set();
   const thongBaoCho = new Map(); // khoá đề chờ → phần tử thông báo
   let cuaSoDuyet = null;         // { cs, khoa }
+  // Ghi chú trên đề
+  let ghiChu = {};               // { số trang: { id: nét } }
+  let dangGhi = false;           // trưởng phòng đang bật bút ghi chú
+  const cuGhi = { cheDo: 'but', mau: MAU_GHI[0].id, co: 4, dut: false };
+  let bangGhi = null;
+  const netTrang = () => Object.values(ghiChu[trangXem] || {});
 
   /* ---------- Chọn file → soạn đề ---------- */
   let soan = null; // { cs, ten, trang }
@@ -77,9 +87,9 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
         ? `<div class="row" style="margin-top:10px"><button type="button" class="btn btn-secondary" id="soan-chup"><i class="fas fa-camera" aria-hidden="true"></i> Chụp thêm trang</button>` +
           `<button type="button" class="btn btn-secondary" id="soan-tai"><i class="fas fa-plus" aria-hidden="true"></i> Thêm ảnh / PDF</button></div>`
         : '') +
-      `<p class="small muted" style="margin-top:12px">${chu ? 'Bạn là chủ phòng: đề sẽ hiện ngay cho cả phòng.' : 'Đề sẽ được gửi tới chủ phòng duyệt trước khi hiện cho cả phòng.'}</p>` +
+      `<p class="small muted" style="margin-top:12px">${chu ? 'Bạn là trưởng phòng: đề sẽ hiện ngay cho cả phòng.' : 'Đề sẽ được gửi tới trưởng phòng duyệt trước khi hiện cho cả phòng.'}</p>` +
       `<div class="row" style="margin-top:10px"><button type="button" class="btn btn-primary" id="soan-gui"${trang.length ? '' : ' disabled'}>` +
-      `<i class="fas fa-paper-plane" aria-hidden="true"></i> ${chu ? 'Đưa lên phòng' : 'Gửi chủ phòng duyệt'}</button>` +
+      `<i class="fas fa-paper-plane" aria-hidden="true"></i> ${chu ? 'Đưa lên phòng' : 'Gửi trưởng phòng duyệt'}</button>` +
       `<button type="button" class="btn btn-secondary" id="soan-huy">Huỷ</button></div>`;
     const q = (s) => cs.querySelector(s);
     q('#soan-ten').addEventListener('input', (e) => { soan.ten = e.target.value; });
@@ -98,7 +108,7 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
       try {
         const kq = await duLieu.guiDe(ma, { tenFile: tenGon(soan.ten), trang: soan.trang });
         cs.close();
-        thongBao(kq === 'da-dua-len' ? '📄 Đề đã lên phòng. Mọi người mở thẻ “Đề bài” để cùng làm.' : 'Đã gửi đề. Chờ chủ phòng duyệt nhé!', { loai: 'ok' });
+        thongBao(kq === 'da-dua-len' ? '📄 Đề đã lên phòng. Mọi người mở thẻ “Đề bài” để cùng làm.' : 'Đã gửi đề. Chờ trưởng phòng duyệt nhé!', { loai: 'ok' });
       } catch (err) {
         e.currentTarget.disabled = false;
         thongBao(esc(err.message), { loai: 'err' });
@@ -135,12 +145,12 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
     if (cuaToi.trangThai === 'tuchoi') {
       if (daBaoCho.has('tuchoi:' + cuaToi.luc)) return;
       daBaoCho.add('tuchoi:' + cuaToi.luc);
-      thongBao(`Chủ phòng chưa duyệt đề “${esc(cuaToi.tenFile)}”. Bạn có thể nhắn trong phần trò chuyện để hỏi thêm.`);
+      thongBao(`Trưởng phòng chưa duyệt đề “${esc(cuaToi.tenFile)}”. Bạn có thể nhắn trong phần trò chuyện để hỏi thêm.`);
       duLieu.huyDeCho(ma).catch(() => {});
       el.innerHTML = '';
       return;
     }
-    el.innerHTML = `<div class="de-cho"><span>⏳ Đề “${esc(cuaToi.tenFile)}” (${cuaToi.soTrang} trang) đang chờ chủ phòng duyệt.</span>` +
+    el.innerHTML = `<div class="de-cho"><span>⏳ Đề “${esc(cuaToi.tenFile)}” (${cuaToi.soTrang} trang) đang chờ trưởng phòng duyệt.</span>` +
       `<button type="button" class="btn btn-secondary btn-nho" id="de-huy-cho">Huỷ gửi</button></div>`;
     $('#de-huy-cho').addEventListener('click', () => duLieu.huyDeCho(ma));
   }
@@ -173,11 +183,14 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
     if (!de) {
       el.innerHTML = `<div class="empty"><b>Chưa có đề nào trong phòng.</b>` +
         `Bấm “Chụp đề” để chụp đề giấy bằng điện thoại, hoặc “Tải ảnh / PDF”. ` +
-        (laChu() ? 'Bạn là chủ phòng nên đề sẽ hiện ngay cho cả phòng.' : 'Đề của bạn sẽ được gửi tới chủ phòng duyệt.') + `</div>`;
+        (laChu() ? 'Bạn là trưởng phòng nên đề sẽ hiện ngay cho cả phòng.' : 'Đề của bạn sẽ được gửi tới trưởng phòng duyệt.') + `</div>`;
       return;
     }
     trangXem = Math.min(trangXem, de.trang.length - 1);
     const n = de.trang.length;
+    const chu = laChu();
+    if (!chu) dangGhi = false;
+    const soGhi = netTrang().length;
     el.innerHTML =
       `<p class="de-tt"><b>${esc(de.tenFile)}</b> <span class="muted small">· ${n} trang · gửi bởi ${esc(de.ten)}</span>` +
       (laChu() ? ` <button type="button" class="btn btn-ghost btn-nho" id="de-go"><i class="fas fa-xmark" aria-hidden="true"></i> Gỡ đề</button>` : '') + `</p>` +
@@ -189,8 +202,46 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
       `<span class="de-so">${Math.round(phongTo * 100)}%</span>` +
       `<button type="button" class="opt" id="de-to" aria-label="Phóng to"${phongTo >= 3 ? ' disabled' : ''}><i class="fas fa-magnifying-glass-plus" aria-hidden="true"></i></button>` +
       `<button type="button" class="opt" id="de-vua">Vừa khung</button></div></div>` +
-      `<div class="de-khung" tabindex="0" aria-label="Khung xem đề, dùng phím mũi tên để cuộn">` +
-      `<img src="${de.trang[trangXem]}" style="width:${phongTo * 100}%" alt="${esc(de.tenFile)}, trang ${trangXem + 1} trên ${n}"></div>`;
+      // Thanh ghi chú: trưởng phòng bật bút để viết / khoanh trực tiếp lên đề
+      (chu
+        ? `<div class="de-ghi-thanh" role="toolbar" aria-label="Ghi chú trên đề">` +
+          `<button type="button" class="opt" id="de-ghi" aria-pressed="${dangGhi}"><i class="fas fa-pen-nib" aria-hidden="true"></i> ${dangGhi ? 'Đang ghi chú' : 'Ghi chú lên đề'}</button>` +
+          (dangGhi
+            ? `<div class="opts" role="radiogroup" aria-label="Bút hay tẩy">` +
+              `<button type="button" class="opt" role="radio" data-ghi-cu="but" aria-checked="${cuGhi.cheDo === 'but'}"><i class="fas fa-pen" aria-hidden="true"></i> Bút</button>` +
+              `<button type="button" class="opt" role="radio" data-ghi-cu="tay" aria-checked="${cuGhi.cheDo === 'tay'}"><i class="fas fa-eraser" aria-hidden="true"></i> Tẩy</button></div>` +
+              `<div class="opts" role="radiogroup" aria-label="Màu bút ghi chú">` + MAU_GHI.map((m) =>
+                `<button type="button" class="opt swatch" role="radio" aria-checked="${cuGhi.mau === m.id}" aria-label="${m.ten}" data-ghi-mau="${m.id}" style="background:${m.id}"></button>`).join('') + `</div>` +
+              `<button type="button" class="opt" id="de-ghi-hoan"${soGhi ? '' : ' disabled'}><i class="fas fa-rotate-left" aria-hidden="true"></i> Hoàn tác</button>` +
+              `<button type="button" class="opt" id="de-ghi-xoa"${soGhi ? '' : ' disabled'}><i class="fas fa-trash-can" aria-hidden="true"></i> Xoá ghi chú trang này</button>`
+            : `<span class="small muted">Bạn là trưởng phòng: bật bút để khoanh, gạch chân, viết lời giải lên đề cho cả phòng xem.</span>`) +
+          `</div>`
+        : `<p class="small muted de-ghi-tt" id="de-ghi-tt">${soGhi ? '✏️ Trang này có ghi chú của trưởng phòng.' : ''}</p>`) +
+      `<div class="de-khung${dangGhi ? ' dang-ghi' : ''}" tabindex="0" aria-label="Khung xem đề, dùng phím mũi tên để cuộn">` +
+      `<div class="de-trang" style="width:${phongTo * 100}%">` +
+      `<img src="${de.trang[trangXem]}" alt="${esc(de.tenFile)}, trang ${trangXem + 1} trên ${n}">` +
+      `<canvas class="de-ghi-chu" role="img" aria-label="Ghi chú của trưởng phòng trên trang ${trangXem + 1}"></canvas></div></div>`;
+    // Lớp ghi chú phủ lên ảnh trang đề (toạ độ theo tỉ lệ khung ảnh nên phóng to / thu nhỏ vẫn khớp)
+    bangGhi = taoBangTrang(el.querySelector('.de-ghi-chu'), {
+      layCongCu: () => ({ ...cuGhi }),
+      khiXong: (net) => {
+        const trang = trangXem;
+        ghiChu[trang] = { ...(ghiChu[trang] || {}), [net.id]: { ...net, uid: ctx.uid, luc: Date.now() } };
+        duLieu.themGhiChu(ma, trang, net).catch((e) => thongBao(esc(e.message), { loai: 'err' }));
+        capNhatNutGhi();
+      }
+    });
+    bangGhi.ve(netTrang());
+    $('#de-ghi')?.addEventListener('click', () => { dangGhi = !dangGhi; veXem(); });
+    el.querySelectorAll('[data-ghi-cu]').forEach((b) => b.addEventListener('click', () => { cuGhi.cheDo = b.dataset.ghiCu; veXem(); }));
+    el.querySelectorAll('[data-ghi-mau]').forEach((b) => b.addEventListener('click', () => { cuGhi.mau = b.dataset.ghiMau; cuGhi.cheDo = 'but'; veXem(); }));
+    $('#de-ghi-hoan')?.addEventListener('click', () => {
+      const cuoi = netTrang().sort((a, b) => (b.luc || 0) - (a.luc || 0))[0];
+      if (cuoi) duLieu.xoaGhiChu(ma, trangXem, cuoi.id).catch((e) => thongBao(esc(e.message), { loai: 'err' }));
+    });
+    $('#de-ghi-xoa')?.addEventListener('click', () => {
+      duLieu.xoaGhiChu(ma, trangXem).catch((e) => thongBao(esc(e.message), { loai: 'err' }));
+    });
     const lat = (d) => { trangXem = Math.max(0, Math.min(n - 1, trangXem + d)); veXem(); el.querySelector('.de-khung').scrollTop = 0; };
     $('#de-truoc').addEventListener('click', () => lat(-1));
     $('#de-sau').addEventListener('click', () => lat(1));
@@ -206,6 +257,19 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
       });
     });
   }
+
+  /** Bật / tắt nút hoàn tác, xoá và dòng báo "có ghi chú" mà không vẽ lại cả khung (đang vẽ dở không bị ngắt). */
+  function capNhatNutGhi() {
+    const co = netTrang().length > 0;
+    ['#de-ghi-hoan', '#de-ghi-xoa'].forEach((s) => { const b = $(s); if (b) b.disabled = !co; });
+    const tt = $('#de-ghi-tt');
+    if (tt) tt.textContent = co ? '✏️ Trang này có ghi chú của trưởng phòng.' : '';
+  }
+  duLieu.theoDoiGhiChu?.(ma, (g) => {
+    ghiChu = g || {};
+    bangGhi?.ve(netTrang());
+    capNhatNutGhi();
+  });
 
   /* ---------- Theo dõi ---------- */
   let lucDeCu; // undefined để lần đầu luôn vẽ (kể cả khi chưa có đề)
@@ -230,7 +294,7 @@ export function ganDeBai({ ma, ctx, laChu, dangXem }) {
 
   return {
     khiMoThe() { $('#p-de-moi').hidden = true; },
-    /** Gọi khi dữ liệu phòng đổi: chủ phòng đổi người thì vẽ lại chữ và nút. */
+    /** Gọi khi dữ liệu phòng đổi: trưởng phòng đổi người thì vẽ lại chữ và nút. */
     capNhatChu() {
       if (laChu() === chuCu) return;
       chuCu = laChu();

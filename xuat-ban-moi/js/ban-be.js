@@ -7,6 +7,7 @@ import { esc, gioVN, thongBao, moCuaSo } from './tienich.js';
 import { khoiTaoTrang, anhDau } from './khung.js';
 import { locTu } from './loc-tu.js';
 import { ganTimTheoId } from './ui/tim-id.js';
+import { xetVangTuc } from './uy-tin.js';
 
 const $ = (s) => document.querySelector(s);
 const ctx = await khoiTaoTrang();
@@ -119,8 +120,10 @@ $('#bb-gui').addEventListener('submit', async (e) => {
   const nd = o.value.trim();
   if (!nd || !dangMo) return;
   o.value = '';
-  try { await duLieu.guiTinRieng(dangMo, locTu(nd).slice(0, 500)); }
-  catch (err) { o.value = nd; thongBao(esc(err.message), { loai: 'err' }); }
+  try {
+    await duLieu.guiTinRieng(dangMo, locTu(nd).slice(0, 500));
+    xetVangTuc(nd); // văng tục: tin đã bị che, người gửi bị trừ uy tín
+  } catch (err) { o.value = nd; thongBao(esc(err.message), { loai: 'err' }); }
 });
 $('#bb-ve').addEventListener('click', dongCuoc);
 $('#bb-huy-ban').addEventListener('click', () => {

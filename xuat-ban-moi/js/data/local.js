@@ -14,9 +14,14 @@ const K = {
   loiMoi: 'pl_loimoi',          // [ lời mời ]
   baoCao: 'pl_baocao',          // [ tin nhắn bị báo cáo ]
   ketBan: 'pl_ketban',          // { mã cặp: lời mời / quan hệ bạn bè }
+  viPham: 'pl_vipham',          // [ { den, muc, loai, ngay, luc } ] — lần bị trừ uy tín
+  daToCao: 'pl_datocao',        // { 'tu_den_ngày': true } — mỗi người chỉ trừ uy tín một bạn một lần mỗi ngày
+  doi: 'pl_doi',                // { mã đội: đội thi đấu }
+  ketQua: 'pl_ketqua',          // { 'kỳ_mã đội': kết quả thi đấu }
+  tran: (ky, doi) => 'pl_tran_' + ky + '_' + doi,   // phòng thi của một đội trong một kỳ
   phong: (ma) => 'pl_phong_' + ma,
   de: (ma) => 'pl_de_' + ma,            // đề bài đang dùng của phòng (để riêng vì ảnh khá nặng)
-  deCho: (ma) => 'pl_decho_' + ma,      // { uid: đề đang chờ chủ phòng duyệt }
+  deCho: (ma) => 'pl_decho_' + ma,      // { uid: đề đang chờ trưởng phòng duyệt }
   phien: 'pl_phien'             // uid đang đăng nhập
 };
 
@@ -294,7 +299,7 @@ function donThanhVien(p) {
   if (doi) chuyenChuPhong(p);
   return doi;
 }
-/** Chủ phòng vắng mặt quá AN_HAN_MS (không phải chỉ tải lại trang) thì chuyển quyền cho người vào sớm nhất. */
+/** Trưởng phòng vắng mặt quá AN_HAN_MS (không phải chỉ tải lại trang) thì chuyển quyền cho người vào sớm nhất. */
 function chuyenChuPhong(p) {
   const con = Object.keys(p.thanhVien);
   // Ai đã rời phòng thì cũng rời cuộc gọi video; cuộc gọi không còn ai thì kết thúc
@@ -305,7 +310,7 @@ function chuyenChuPhong(p) {
   if (!con.length) { p.trongTu = p.trongTu || Date.now(); return; }
   p.trongTu = null;
   if (p.thanhVien[p.chuPhong]) { p.chuVangTu = null; return; }
-  if (p.chuVangTu && Date.now() - p.chuVangTu < AN_HAN_MS) return; // chờ chủ phòng quay lại
+  if (p.chuVangTu && Date.now() - p.chuVangTu < AN_HAN_MS) return; // chờ trưởng phòng quay lại
   p.chuVangTu = null;
   p.chuPhong = con.sort((a, b) => p.thanhVien[a].vaoLuc - p.thanhVien[b].vaoLuc)[0];
 }
@@ -376,7 +381,7 @@ export async function roiPhong(ma, { tamThoi = false } = {}) {
     if (!p.thanhVien[uidHienTai]) return false;
     delete p.thanhVien[uidHienTai];
     p.cho = p.cho.map((u) => (u === uidHienTai ? null : u));
-    // Tải lại trang: giữ quyền chủ phòng thêm một lúc; bấm "Rời phòng": chuyển quyền ngay
+    // Tải lại trang: giữ quyền trưởng phòng thêm một lúc; bấm "Rời phòng": chuyển quyền ngay
     if (p.chuPhong === uidHienTai) p.chuVangTu = tamThoi ? Date.now() : null;
     chuyenChuPhong(p);
   });
@@ -421,14 +426,14 @@ export async function xoaBang(ma) {
   suaPhong(ma, (p) => { if (!p.thanhVien[uidHienTai]) return false; p.net = {}; });
 }
 
-/* Trang trí phòng chung (chỉ chủ phòng): tường và kiểu kệ sách của cả phòng */
+/* Trang trí phòng chung (chỉ trưởng phòng): tường và kiểu kệ sách của cả phòng */
 export async function trangTriPhong(ma, { tuong, ke }) {
   suaPhong(ma, (p) => {
     if (p.chuPhong !== uidHienTai) return false;
     if (tuong) p.tuong = String(tuong).slice(0, 30);
     if (ke) p.ke = String(ke).slice(0, 30);
   });
-  if (docPhong(ma)?.chuPhong !== uidHienTai) throw new Error('Chỉ chủ phòng mới trang trí được phòng.');
+  if (docPhong(ma)?.chuPhong !== uidHienTai) throw new Error('Chỉ trưởng phòng mới trang trí được phòng.');
 }
 
 /* Gọi video — p.goi ={ id, nguoiMo, tenNguoiMo, luc, thamGia: { uid: mã phiên }, tuChoi: { uid: true } }
@@ -474,12 +479,16 @@ export function ngheTinHieu(ma, f) {
   return () => kenhTinHieu.removeEventListener('message', nghe1);
 }
 
-/* Đề bài chung — ai cũng gửi được, chủ phòng duyệt; đề của chủ phòng lên ngay.
+/* Đề bài chung — ai cũng gửi được, trưởng phòng duyệt; đề của trưởng phòng lên ngay.
  * Đề: { nguoiGui, ten, tenFile, soTrang, luc, trang: [dataURL JPEG] } */
 export const kichThuocAnhDe = 110 * 1000; // localStorage chỉ ~5 MB nên ảnh ở chế độ thử nén nhỏ hơn
 function ghiDe(k, v) {
   try { ghi(k, v); }
   catch (e) { throw new Error('Bộ nhớ của chế độ thử đã đầy. Hãy gửi ít trang hơn (bản chạy thật không bị giới hạn này).'); }
+}
+/** Đề đổi hoặc bị gỡ thì ghi chú của trưởng phòng trên đề cũ cũng bỏ đi. */
+function xoaHetGhiChu(ma) {
+  if (docPhong(ma)?.ghiChuDe) suaPhong(ma, (p) => { delete p.ghiChuDe; });
 }
 export async function guiDe(ma, { tenFile, trang }) {
   const p = docPhong(ma);
@@ -488,6 +497,7 @@ export async function guiDe(ma, { tenFile, trang }) {
   const de = { nguoiGui: uidHienTai, ten: tv.ten, tenFile, soTrang: trang.length, luc: Date.now(), trang };
   if (p.chuPhong === uidHienTai) {
     ghiDe(K.de(ma), de);
+    xoaHetGhiChu(ma);
   } else {
     const cho = doc(K.deCho(ma), {});
     cho[uidHienTai] = { ...de, trangThai: 'cho' };
@@ -498,13 +508,14 @@ export async function guiDe(ma, { tenFile, trang }) {
 }
 export async function duyetDe(ma, uid, dongY) {
   const p = docPhong(ma);
-  if (p?.chuPhong !== uidHienTai) throw new Error('Chỉ chủ phòng mới duyệt được đề.');
+  if (p?.chuPhong !== uidHienTai) throw new Error('Chỉ trưởng phòng mới duyệt được đề.');
   const cho = doc(K.deCho(ma), {});
   const de = cho[uid];
   if (!de) throw new Error('Đề này không còn chờ duyệt nữa.');
   if (dongY) {
     const { trangThai, ...sach } = de;
     ghiDe(K.de(ma), sach);
+    xoaHetGhiChu(ma);
     delete cho[uid];
   } else cho[uid].trangThai = 'tuchoi';
   ghi(K.deCho(ma), cho);
@@ -518,11 +529,55 @@ export async function huyDeCho(ma) {
   phat('de:' + ma);
 }
 export async function goDe(ma) {
-  if (docPhong(ma)?.chuPhong !== uidHienTai) throw new Error('Chỉ chủ phòng mới gỡ được đề.');
+  if (docPhong(ma)?.chuPhong !== uidHienTai) throw new Error('Chỉ trưởng phòng mới gỡ được đề.');
   xoa(K.de(ma));
+  xoaHetGhiChu(ma);
   phat('de:' + ma);
 }
-/** f({ de, deCho }) — deCho: chủ phòng thấy mọi đề chờ duyệt, người khác chỉ thấy đề của mình. */
+
+/* Ghi chú trên đề (chỉ trưởng phòng vẽ, cả phòng xem): p.ghiChuDe = { số trang: { id: nét } }
+ * Nét cùng dạng với bảng trắng (toạ độ 0–1 theo khung ảnh của trang đề). */
+export async function themGhiChu(ma, trang, net) {
+  suaPhong(ma, (p) => {
+    if (p.chuPhong !== uidHienTai) return false;
+    p.ghiChuDe = p.ghiChuDe || {};
+    p.ghiChuDe[trang] = { ...(p.ghiChuDe[trang] || {}), [net.id]: { ...net, uid: uidHienTai, luc: Date.now() } };
+  });
+  if (docPhong(ma)?.chuPhong !== uidHienTai) throw new Error('Chỉ trưởng phòng mới ghi chú được trên đề.');
+}
+export async function xoaGhiChu(ma, trang, id) {
+  suaPhong(ma, (p) => {
+    if (p.chuPhong !== uidHienTai || !p.ghiChuDe?.[trang]) return false;
+    if (id) delete p.ghiChuDe[trang][id];
+    else delete p.ghiChuDe[trang];
+  });
+}
+/** f({ số trang: { id: nét } }) */
+export function theoDoiGhiChu(ma, f) {
+  let dau = null;
+  const goi = () => {
+    const g = docPhong(ma)?.ghiChuDe || {};
+    const moi = JSON.stringify(g);
+    if (moi === dau) return;
+    dau = moi;
+    f(g);
+  };
+  goi();
+  return nghe('phong:' + ma, goi);
+}
+
+/* Chuyển quyền trưởng phòng (chỉ trưởng phòng hiện tại, cho người đang ở trong phòng) */
+export async function chuyenTruongPhong(ma, uid) {
+  let loi = '';
+  suaPhong(ma, (p) => {
+    if (p.chuPhong !== uidHienTai) { loi = 'Chỉ trưởng phòng mới chuyển quyền được.'; return false; }
+    if (!p.thanhVien[uid]) { loi = 'Bạn này không còn ở trong phòng.'; return false; }
+    p.chuPhong = uid;
+    p.chuVangTu = null;
+  });
+  if (loi) throw new Error(loi);
+}
+/** f({ de, deCho }) — deCho: trưởng phòng thấy mọi đề chờ duyệt, người khác chỉ thấy đề của mình. */
 export function theoDoiDe(ma, f) {
   const goi = () => {
     const p = docPhong(ma);
@@ -533,15 +588,21 @@ export function theoDoiDe(ma, f) {
   goi();
   let chuCu = docPhong(ma)?.chuPhong;
   const h1 = nghe('de:' + ma, goi);
-  const h2 = nghe('phong:' + ma, () => { // chỉ đọc lại đề khi chủ phòng đổi người
+  const h2 = nghe('phong:' + ma, () => { // chỉ đọc lại đề khi trưởng phòng đổi người
     const chu = docPhong(ma)?.chuPhong;
     if (chu !== chuCu) { chuCu = chu; goi(); }
   });
   return () => { h1(); h2(); };
 }
 
-/* Đồng hồ phòng — chỉ chủ phòng điều khiển. Mốc bắt đầu lấy theo giờ "máy chủ". */
-export const gioMayChu = () => Date.now();
+/* Đồng hồ phòng — chỉ trưởng phòng điều khiển. Mốc bắt đầu lấy theo giờ "máy chủ".
+ * Chế độ thử có thể giả lập giờ khác (plDoiGio trong Console) để thử Thi Đấu ngoài cuối tuần. */
+let lechGioThu = Number(localStorage.getItem('pl_lech_gio')) || 0;
+export const gioMayChu = () => Date.now() + lechGioThu;
+export function datLechGio(ms) {
+  lechGioThu = Number(ms) || 0;
+  lechGioThu ? localStorage.setItem('pl_lech_gio', String(lechGioThu)) : localStorage.removeItem('pl_lech_gio');
+}
 export async function dieuKhienDongHo(ma, hanhDong, phut) {
   suaPhong(ma, (p) => {
     if (p.chuPhong !== uidHienTai) return false;
@@ -555,4 +616,197 @@ export async function dieuKhienDongHo(ma, hanhDong, phut) {
       p.dongHo = { thoiLuongMs: ms, conLaiMs: ms, batDauLuc: null, dangChay: false };
     } else return false;
   });
+}
+
+/* ---------- Uy tín ----------
+ * Mỗi lần bị trừ là một bản ghi { den, muc, loai: 'toCao' | 'vangTuc', ngay, luc }. Không lưu ai tố cáo.
+ * Uy tín = 100 − tổng mức bị trừ + số điểm đã hồi (hồ sơ công khai: uyTinCong), giữ trong 0–100 (xem js/uy-tin.js).
+ */
+const ngaySo = () => Math.floor((gioMayChu() + 7 * 3600e3) / 864e5); // số thứ tự ngày theo giờ Việt Nam
+/** Tố cáo: trừ uy tín bạn `den`. Mỗi người chỉ trừ một bạn một lần mỗi ngày. Trả về { daTruTruoc } */
+export async function toCao({ den, muc }) {
+  if (!den || den === uidHienTai) throw new Error('Không tự tố cáo chính mình được.');
+  const khoa = uidHienTai + '_' + den + '_' + ngaySo();
+  const da = doc(K.daToCao, {});
+  if (da[khoa]) return { daTruTruoc: true };
+  da[khoa] = true;
+  ghi(K.daToCao, da);
+  const ds = doc(K.viPham, []);
+  ds.push({ den, muc: Math.max(5, Math.min(10, Math.round(muc))), loai: 'toCao', ngay: ngaySo(), luc: gioMayChu() });
+  ghi(K.viPham, ds);
+  phat('vipham');
+  return { daTruTruoc: false };
+}
+/** Văng tục: tự trừ uy tín của chính mình. */
+export async function ghiVangTuc(muc) {
+  const ds = doc(K.viPham, []);
+  ds.push({ den: uidHienTai, muc: Math.max(5, Math.min(10, Math.round(muc))), loai: 'vangTuc', ngay: ngaySo(), luc: gioMayChu() });
+  ghi(K.viPham, ds);
+  phat('vipham');
+}
+export async function dsViPham(uid = uidHienTai) {
+  return doc(K.viPham, []).filter((v) => v.den === uid);
+}
+/** f(danh sách lần bị trừ uy tín của `uid`) */
+export function theoDoiViPham(uid, f) {
+  const goi = () => f(doc(K.viPham, []).filter((v) => v.den === uid));
+  goi();
+  return nghe('vipham', goi);
+}
+
+/* ---------- Đội thi đấu: { ma, ten, truong, thanhVien: [uid], mon: { uid: mã môn }, taoLuc } ---------- */
+const docDoi = () => doc(K.doi, {});
+function suaDoi(ma, f) {
+  const ds = docDoi();
+  const d = ds[ma];
+  if (!d) throw new Error('Không tìm thấy đội ' + ma + '. Kiểm tra lại mã đội.');
+  const kq = f(d);
+  if (kq === 'xoa') delete ds[ma];
+  ghi(K.doi, ds);
+  phat('doi');
+  return ds[ma] || null;
+}
+export async function taoDoi(ten) {
+  let ma;
+  do { ma = maNgauNhien(6); } while (docDoi()[ma]);
+  const ds = docDoi();
+  ds[ma] = { ma, ten: String(ten).slice(0, 30), truong: uidHienTai, thanhVien: [uidHienTai], mon: {}, taoLuc: Date.now() };
+  ghi(K.doi, ds);
+  phat('doi');
+  return ma;
+}
+export async function layDoi(ma) { return docDoi()[ma] || null; }
+export async function doiCuaToi() { return Object.values(docDoi()).filter((d) => d.thanhVien.includes(uidHienTai)); }
+export function theoDoiDoiCuaToi(f) {
+  const uid = uidHienTai;
+  const goi = () => f(Object.values(docDoi()).filter((d) => d.thanhVien.includes(uid)));
+  goi();
+  return nghe('doi', goi);
+}
+export async function vaoDoi(ma, toiDa) {
+  suaDoi(ma, (d) => {
+    if (d.thanhVien.includes(uidHienTai)) return;
+    if (d.thanhVien.length >= toiDa) throw new Error(`Đội đã đủ ${toiDa} người.`);
+    d.thanhVien.push(uidHienTai);
+  });
+}
+export async function roiDoi(ma) {
+  suaDoi(ma, (d) => {
+    if (d.truong === uidHienTai) throw new Error('Đội trưởng không rời đội được. Bạn có thể giải tán đội.');
+    d.thanhVien = d.thanhVien.filter((u) => u !== uidHienTai);
+    delete d.mon[uidHienTai];
+  });
+}
+/** Đội trưởng mời một thành viên ra khỏi đội. */
+export async function boKhoiDoi(ma, uid) {
+  suaDoi(ma, (d) => {
+    if (d.truong !== uidHienTai) throw new Error('Chỉ đội trưởng mới làm được việc này.');
+    if (uid === d.truong) return;
+    d.thanhVien = d.thanhVien.filter((u) => u !== uid);
+    delete d.mon[uid];
+  });
+}
+export async function doiTenDoi(ma, ten) {
+  suaDoi(ma, (d) => {
+    if (d.truong !== uidHienTai) throw new Error('Chỉ đội trưởng mới đổi được tên đội.');
+    d.ten = String(ten).slice(0, 30);
+  });
+}
+/** Chọn môn mình sẽ thi trong đội (mỗi người một môn, không trùng nhau). */
+export async function chonMonDoi(ma, mon) {
+  suaDoi(ma, (d) => {
+    if (!d.thanhVien.includes(uidHienTai)) throw new Error('Bạn không còn ở trong đội này.');
+    if (mon && Object.entries(d.mon).some(([u, m]) => u !== uidHienTai && m === mon)) throw new Error('Môn này đã có bạn khác trong đội chọn.');
+    if (mon) d.mon[uidHienTai] = mon; else delete d.mon[uidHienTai];
+  });
+}
+export async function giaiTanDoi(ma) {
+  suaDoi(ma, (d) => {
+    if (d.truong !== uidHienTai) throw new Error('Chỉ đội trưởng mới giải tán được đội.');
+    return 'xoa';
+  });
+}
+
+/* ---------- Phòng thi của đội trong một kỳ ----------
+ * { ky, maDoi, ten, truong, thanhVien: { uid: { ten, mon } }, phan: [uid trả lời câu i], cau: [{ mon, id, hoanVi }],
+ *   hanMs, nghiMs, batDauLuc (0 = chưa bắt đầu), mat: { uid: lúc báo có mặt }, traLoi: { i: { chon, luc } }, xong }
+ */
+const MAT_TRAN_MS = 15 * 1000;
+const docTran = (ky, doi) => doc(K.tran(ky, doi), null);
+function suaTran(ky, doi, f) {
+  const t = docTran(ky, doi);
+  if (!t) throw new Error('Phòng thi không còn nữa.');
+  if (f(t) === false) return t;
+  ghi(K.tran(ky, doi), t);
+  phat('tran:' + ky + '_' + doi);
+  return t;
+}
+/** Bỏ người lâu không báo có mặt (tab đã đóng). */
+function locMat(t) {
+  if (!t) return t;
+  const mat = Object.fromEntries(Object.entries(t.mat || {}).filter(([, luc]) => Date.now() - luc < MAT_TRAN_MS));
+  return { ...t, mat };
+}
+export async function moTran(ky, doi, tran) {
+  if (docTran(ky, doi)) return locMat(docTran(ky, doi));
+  const t = { ...tran, ky, maDoi: doi, truong: uidHienTai, batDauLuc: 0, mat: {}, traLoi: {}, xong: false };
+  ghi(K.tran(ky, doi), t);
+  phat('tran:' + ky + '_' + doi);
+  return t;
+}
+export async function layTran(ky, doi) { return locMat(docTran(ky, doi)); }
+export function theoDoiTran(ky, doi, f) {
+  const goi = () => f(locMat(docTran(ky, doi)));
+  goi();
+  const h = nghe('tran:' + ky + '_' + doi, goi);
+  const lap = setInterval(goi, 5000); // để thấy người vừa rời (không còn báo có mặt)
+  return () => { h(); clearInterval(lap); };
+}
+/** Báo "tôi đang ở phòng thi" cho tới khi gọi hàm trả về. */
+export function coMatTran(ky, doi) {
+  const bao = () => { try { suaTran(ky, doi, (t) => { if (!t.thanhVien[uidHienTai]) return false; t.mat = { ...(t.mat || {}), [uidHienTai]: Date.now() }; }); } catch (e) { /* phòng thi đã bị huỷ */ } };
+  bao();
+  const lap = setInterval(bao, 5000);
+  const roi = () => {
+    clearInterval(lap);
+    try { suaTran(ky, doi, (t) => { if (!t.mat?.[uidHienTai]) return false; delete t.mat[uidHienTai]; }); } catch (e) { /* bỏ qua */ }
+  };
+  addEventListener('pagehide', roi, { once: true });
+  return roi;
+}
+export async function batDauTran(ky, doi) {
+  suaTran(ky, doi, (t) => {
+    if (t.truong !== uidHienTai || t.batDauLuc) return false;
+    t.batDauLuc = gioMayChu();
+  });
+}
+export async function huyTran(ky, doi) {
+  const t = docTran(ky, doi);
+  if (t && t.truong === uidHienTai && !t.batDauLuc) { xoa(K.tran(ky, doi)); phat('tran:' + ky + '_' + doi); }
+}
+export async function traLoiTran(ky, doi, i, chon) {
+  suaTran(ky, doi, (t) => {
+    if (!t.batDauLuc || t.phan[i] !== uidHienTai || t.traLoi?.[i]) return false;
+    t.traLoi = { ...(t.traLoi || {}), [i]: { chon, luc: gioMayChu() } };
+  });
+}
+export async function xongTran(ky, doi) {
+  suaTran(ky, doi, (t) => { if (t.xong) return false; t.xong = true; });
+}
+
+/* ---------- Kết quả thi đấu: { ky, maDoi, tenDoi, thanhVien: [uid], ten: { uid: tên }, mon: { uid: môn }, diem, dung, soCau, thoiGianMs, luc } ---------- */
+export async function ghiKetQua(kq) {
+  const ds = doc(K.ketQua, {});
+  const id = kq.ky + '_' + kq.maDoi;
+  if (ds[id]) return ds[id];
+  if (!kq.thanhVien.includes(uidHienTai)) throw new Error('Bạn không ở trong đội này.');
+  ds[id] = { ...kq, luc: gioMayChu() };
+  ghi(K.ketQua, ds);
+  phat('ketqua');
+  return ds[id];
+}
+/** Kết quả của các kỳ trong danh sách `kys`. */
+export async function dsKetQua(kys) {
+  const ds = doc(K.ketQua, {});
+  return Object.values(ds).filter((x) => kys.includes(x.ky));
 }

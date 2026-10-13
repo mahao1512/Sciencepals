@@ -223,9 +223,19 @@ async function nopBai(t) {
     .filter(([mon, ds]) => !(mon in diem) && ds.every((c) => timCau(mon, c.id)))); // bỏ chi tiết của đề cũ không còn trong ngân hàng
   const { manh, yeu } = phanLoai(diemGop, NGUONG);
   const luc = Date.now();
+  // Tích luỹ mọi câu từng làm / từng làm đúng ở bài đầu vào (bài test tuần chỉ dùng câu từng sai hoặc chưa làm)
+  const tichLuy = (cu, loc) => {
+    const kq = Object.fromEntries(Object.entries(cu || {}).map(([mon, ds]) => [mon, new Set(ds)]));
+    Object.entries({ ...(ctx.rieng.kiemTra?.chiTiet || {}), ...chiTiet }).forEach(([mon, ds]) => ds.forEach((c) => {
+      if (loc(mon, c)) (kq[mon] = kq[mon] || new Set()).add(c.id);
+    }));
+    return Object.fromEntries(Object.entries(kq).map(([mon, s]) => [mon, [...s]]));
+  };
+  const daDung = tichLuy(ctx.rieng.kiemTra?.daDung, (mon, c) => c.chon === timCau(mon, c.id)?.answer);
+  const daLam = tichLuy(ctx.rieng.kiemTra?.daLam, () => true);
   try {
     ctx.congKhai = await duLieu.luuCongKhai({ diem: diemGop, manh, yeu, kiemTraLuc: luc });
-    ctx.rieng = await duLieu.luuRieng({ kiemTra: { luc, chiTiet: { ...chiTietCu, ...chiTiet }, lanNay: Object.keys(diem) } });
+    ctx.rieng = await duLieu.luuRieng({ kiemTra: { luc, chiTiet: { ...chiTietCu, ...chiTiet }, lanNay: Object.keys(diem), daDung, daLam } });
   } catch (e) {
     return thongBao('Chưa lưu được kết quả: ' + esc(e.message) + ' Bài làm vẫn còn trên máy, bấm Nộp bài để thử lại.', { loai: 'err' });
   }

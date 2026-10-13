@@ -22,3 +22,8 @@ const MAU = new RegExp(
 export function locTu(s) {
   return String(s).normalize('NFC').replace(MAU, (_, dau, tu) => dau + '*'.repeat(Math.max(3, tu.length)));
 }
+
+/** Đếm số từ cấm trong chuỗi (dùng để trừ uy tín khi văng tục). */
+export function demTuCam(s) {
+  return (String(s).normalize('NFC').match(MAU) || []).length;
+}

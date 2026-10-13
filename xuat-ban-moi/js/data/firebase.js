@@ -15,7 +15,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, setDoc, getDocs, updateDoc, addDoc, deleteDoc, collection, query, where, limit,
-  orderBy, limitToLast as fsLimitToLast, onSnapshot, serverTimestamp
+  orderBy, limitToLast as fsLimitToLast, onSnapshot, serverTimestamp, writeBatch, arrayUnion, arrayRemove, deleteField
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import {
   getDatabase, ref, get, set, update, push, remove, onValue, onChildAdded, onDisconnect, runTransaction,
@@ -100,7 +100,7 @@ export async function dangXuat() { await signOut(auth); }
 export function dangNhapTen() { throw new Error('Bản chạy thật dùng Google hoặc email để đăng nhập.'); }
 
 /* ---------- Hồ sơ công khai (Firestore: congKhai/{uid}) ---------- */
-const TRUONG_CONG_KHAI = ['ten', 'nhanVat', 'ban', 'tuong', 'ke', 'maId', 'diem', 'manh', 'yeu', 'kiemTraLuc'];
+const TRUONG_CONG_KHAI = ['ten', 'nhanVat', 'ban', 'tuong', 'ke', 'maId', 'diem', 'manh', 'yeu', 'kiemTraLuc', 'uyTinCong', 'uyTinLuc'];
 /** Tìm hồ sơ công khai theo ID tài khoản (8 kí tự). */
 export async function timTheoId(maId) {
   const s = await getDocs(query(collection(fs, 'congKhai'), where('maId', '==', maId), limit(1)));
@@ -118,6 +118,8 @@ export async function dsCongKhai() {
 export async function luuCongKhai(phan) {
   const sach = {};
   TRUONG_CONG_KHAI.forEach((k) => { if (k in phan) sach[k] = phan[k]; });
+  // Mốc hồi uy tín lấy giờ máy chủ để luật bảo mật kiểm tra "cách lần trước ít nhất ~3 giờ"
+  if ('uyTinLuc' in sach) sach.uyTinLuc = serverTimestamp();
   await setDoc(doc(fs, 'congKhai', uidToi()), { ...sach, uid: uidToi(), capNhat: serverTimestamp() }, { merge: true });
   return layCongKhai();
 }
@@ -327,7 +329,7 @@ export function theoDoiPhong(ma, f) {
       dangHen = false;
       if (daCo.size < 7) return; // chờ đủ 7 nhánh lần đầu để không báo nhầm "đã rời phòng"
       const p = ghepPhong(ma, n);
-      // Chủ phòng mất kết nối quá 60 giây (không phải chỉ tải lại trang): người vào sớm nhất còn lại nhận quyền
+      // Trưởng phòng mất kết nối quá 60 giây (không phải chỉ tải lại trang): người vào sớm nhất còn lại nhận quyền
       if (p && !p.thanhVien[p.chuPhong] && gioMayChu() - (p.trongTu || 0) > AN_HAN_MS) {
         const dau = Object.keys(p.thanhVien).sort((a, b) => (p.thanhVien[a].vaoLuc || 0) - (p.thanhVien[b].vaoLuc || 0))[0];
         if (dau === uidToi()) update(rp(ma, 'meta'), { chuPhong: dau }).catch(() => {});
@@ -345,7 +347,7 @@ export function theoDoiPhong(ma, f) {
     nghe('dongHo', rp(ma, 'dongHo')),
     nghe('goi', rp(ma, 'goi'))
   ];
-  const kiemTraChu = setInterval(goi, 15 * 1000); // xét lại quyền chủ phòng khi hết thời gian chờ
+  const kiemTraChu = setInterval(goi, 15 * 1000); // xét lại quyền trưởng phòng khi hết thời gian chờ
   return () => { clearInterval(kiemTraChu); huy.forEach((h) => h()); };
 }
 export async function capNhatToi(ma, phan) {
@@ -362,13 +364,13 @@ export async function themNet(ma, net) {
 export async function xoaNet(ma, id) { await remove(rp(ma, 'net/' + id)); }
 export async function xoaBang(ma) { await remove(rp(ma, 'net')); }
 
-/* ---------- Trang trí phòng chung (chỉ chủ phòng): phong/{ma}/meta/tuong, meta/ke ---------- */
+/* ---------- Trang trí phòng chung (chỉ trưởng phòng): phong/{ma}/meta/tuong, meta/ke ---------- */
 export async function trangTriPhong(ma, { tuong, ke }) {
   const phan = {};
   if (tuong) phan.tuong = String(tuong).slice(0, 30);
   if (ke) phan.ke = String(ke).slice(0, 30);
   try { await update(rp(ma, 'meta'), phan); }
-  catch (e) { throw new Error('Chỉ chủ phòng mới trang trí được phòng.'); }
+  catch (e) { throw new Error('Chỉ trưởng phòng mới trang trí được phòng.'); }
 }
 
 /* ---------- Gọi video: phong/{ma}/goi = { id, nguoiMo, tenNguoiMo, luc, thamGia: { uid: mã phiên }, tuChoi: { uid: true } }
@@ -411,7 +413,7 @@ export function ngheTinHieu(ma, f) {
   }, () => {});
 }
 
-/* ---------- Đề bài chung: phong/{ma}/de (đề đang dùng), phong/{ma}/deCho/{uid} (chờ chủ phòng duyệt) ---------- */
+/* ---------- Đề bài chung: phong/{ma}/de (đề đang dùng), phong/{ma}/deCho/{uid} (chờ trưởng phòng duyệt) ---------- */
 export const kichThuocAnhDe = 250 * 1000;
 const doiMang = (t) => (Array.isArray(t) ? t : Object.keys(t || {}).sort((a, b) => a - b).map((k) => t[k]));
 export async function guiDe(ma, { tenFile, trang }) {
@@ -420,7 +422,8 @@ export async function guiDe(ma, { tenFile, trang }) {
   if (!tv) throw new Error('Bạn cần ở trong phòng để gửi đề.');
   const de = { nguoiGui: uid, ten: tv.ten, tenFile: String(tenFile).slice(0, 120), soTrang: trang.length, luc: rTs(), trang };
   try {
-    if (meta.chuPhong === uid) { await set(rp(ma, 'de'), de); return 'da-dua-len'; }
+    // Đề mới thay đề cũ: ghi chú của trưởng phòng trên đề cũ cũng bỏ đi
+    if (meta.chuPhong === uid) { await update(rp(ma), { de, ghiChuDe: null }); return 'da-dua-len'; }
     await set(rp(ma, 'deCho/' + uid), { ...de, trangThai: 'cho' });
     return 'cho-duyet';
   } catch (e) {
@@ -432,17 +435,43 @@ export async function duyetDe(ma, uid, dongY) {
   if (!s.exists()) throw new Error('Đề này không còn chờ duyệt nữa.');
   if (dongY) {
     const { trangThai, ...de } = s.val();
-    await update(rp(ma), { de: { ...de, trang: doiMang(de.trang) }, [`deCho/${uid}`]: null });
+    await update(rp(ma), { de: { ...de, trang: doiMang(de.trang) }, [`deCho/${uid}`]: null, ghiChuDe: null });
   } else {
     await set(rp(ma, `deCho/${uid}/trangThai`), 'tuchoi');
   }
 }
 export async function huyDeCho(ma) { await remove(rp(ma, 'deCho/' + uidToi())); }
 export async function goDe(ma) {
-  try { await remove(rp(ma, 'de')); }
-  catch (e) { throw new Error('Chỉ chủ phòng mới gỡ được đề.'); }
+  try { await update(rp(ma), { de: null, ghiChuDe: null }); }
+  catch (e) { throw new Error('Chỉ trưởng phòng mới gỡ được đề.'); }
 }
-/** f({ de, deCho }) — chủ phòng nghe cả nhánh deCho, người khác chỉ nghe đề chờ của mình. */
+
+/* ---------- Ghi chú trên đề: phong/{ma}/ghiChuDe/{số trang}/{id} = nét (chỉ trưởng phòng vẽ, cả phòng xem) ---------- */
+export async function themGhiChu(ma, trang, net) {
+  const { id, ...x } = net;
+  try { await set(rp(ma, `ghiChuDe/${trang}/${id}`), { ...x, uid: uidToi(), luc: rTs() }); }
+  catch (e) { throw new Error('Chỉ trưởng phòng mới ghi chú được trên đề.'); }
+}
+export async function xoaGhiChu(ma, trang, id) {
+  await remove(rp(ma, id ? `ghiChuDe/${trang}/${id}` : `ghiChuDe/${trang}`));
+}
+/** f({ số trang: { id: nét } }) */
+export function theoDoiGhiChu(ma, f) {
+  return onValue(rp(ma, 'ghiChuDe'), (s) => {
+    // Realtime Database trả về mảng khi khoá là số liên tiếp: đổi lại thành object, bỏ chỗ trống
+    const v = s.val() || {};
+    f(Object.fromEntries(Object.entries(v).filter(([, x]) => x).map(([k, x]) => [k, x])));
+  }, () => f({}));
+}
+
+/* ---------- Chuyển quyền trưởng phòng (chỉ trưởng phòng hiện tại) ---------- */
+export async function chuyenTruongPhong(ma, uid) {
+  const tv = (await get(rp(ma, 'thanhVien/' + uid))).val();
+  if (!tv) throw new Error('Bạn này không còn ở trong phòng.');
+  try { await update(rp(ma, 'meta'), { chuPhong: uid }); }
+  catch (e) { throw new Error('Chỉ trưởng phòng mới chuyển quyền được. (Nếu bạn đang là trưởng phòng, người quản lí cần dán lại database.rules.json mới nhất.)'); }
+}
+/** f({ de, deCho }) — trưởng phòng nghe cả nhánh deCho, người khác chỉ nghe đề chờ của mình. */
 export function theoDoiDe(ma, f) {
   const uid = uidToi();
   let de = null;
@@ -479,5 +508,136 @@ export async function dieuKhienDongHo(ma, hanhDong, phut) {
   else if (hanhDong === 'datThoiLuong') { const ms = Math.round(phut * 60000); moi = { thoiLuongMs: ms, conLaiMs: ms, batDauLuc: 0, dangChay: false }; }
   else return;
   try { await set(rp(ma, 'dongHo'), moi); }
-  catch (e) { throw new Error('Chỉ chủ phòng mới điều khiển được đồng hồ.'); }
+  catch (e) { throw new Error('Chỉ trưởng phòng mới điều khiển được đồng hồ.'); }
+}
+
+/* ---------- Uy tín (Firestore) ----------
+ *   viPham/{id} = { den, muc, loai: 'toCao' | 'vangTuc', ngay, luc } — không lưu ai tố cáo
+ *   daToCao/{tố cáo_bị tố cáo_ngày} = { tu, den, ngay, viPham } — chỉ người tố cáo đọc được; mỗi ngày một lần
+ */
+const ngaySo = () => Math.floor((gioMayChu() + 7 * 3600e3) / 864e5); // số thứ tự ngày theo giờ Việt Nam
+const doiViPham = (d) => ({ ...d.data(), id: d.id, luc: doiLuc(d.data().luc) });
+export async function toCao({ den, muc }) {
+  if (!den || den === uidToi()) throw new Error('Không tự tố cáo chính mình được.');
+  const ngay = ngaySo();
+  const daRef = doc(fs, 'daToCao', `${uidToi()}_${den}_${ngay}`);
+  const da = await getDoc(daRef).catch(() => null);
+  if (da?.exists()) return { daTruTruoc: true };
+  const vpRef = doc(collection(fs, 'viPham'));
+  const b = writeBatch(fs);
+  b.set(daRef, { tu: uidToi(), den, ngay, viPham: vpRef.id });
+  b.set(vpRef, { den, muc: Math.max(5, Math.min(10, Math.round(muc))), loai: 'toCao', ngay, luc: serverTimestamp() });
+  try { await b.commit(); }
+  catch (e) {
+    if ((await getDoc(daRef).catch(() => null))?.exists()) return { daTruTruoc: true };
+    throw new Error('Chưa trừ được uy tín (người quản lí cần dán lại file firestore.rules mới nhất).');
+  }
+  return { daTruTruoc: false };
+}
+export async function ghiVangTuc(muc) {
+  await addDoc(collection(fs, 'viPham'), { den: uidToi(), muc: Math.max(5, Math.min(10, Math.round(muc))), loai: 'vangTuc', ngay: ngaySo(), luc: serverTimestamp() });
+}
+export async function dsViPham(uid = uidToi()) {
+  const s = await getDocs(query(collection(fs, 'viPham'), where('den', '==', uid)));
+  return s.docs.map(doiViPham);
+}
+export function theoDoiViPham(uid, f) {
+  return onSnapshot(query(collection(fs, 'viPham'), where('den', '==', uid)), (s) => f(s.docs.map(doiViPham)), () => f([]));
+}
+
+/* ---------- Đội thi đấu (Firestore: doi/{mã}) = { ten, truong, thanhVien: [uid], mon: { uid: môn }, taoLuc } ---------- */
+const doiDoi = (s) => ({ ...s.data(), ma: s.id, mon: s.data().mon || {} });
+export async function taoDoi(ten) {
+  let ma;
+  do { ma = maNgauNhien(6); } while ((await getDoc(doc(fs, 'doi', ma))).exists());
+  await setDoc(doc(fs, 'doi', ma), { ten: String(ten).slice(0, 30), truong: uidToi(), thanhVien: [uidToi()], mon: {}, taoLuc: serverTimestamp() });
+  return ma;
+}
+export async function layDoi(ma) {
+  const s = await getDoc(doc(fs, 'doi', ma));
+  return s.exists() ? doiDoi(s) : null;
+}
+export async function doiCuaToi() {
+  const s = await getDocs(query(collection(fs, 'doi'), where('thanhVien', 'array-contains', uidToi())));
+  return s.docs.map(doiDoi);
+}
+export function theoDoiDoiCuaToi(f) {
+  return onSnapshot(query(collection(fs, 'doi'), where('thanhVien', 'array-contains', uidToi())), (s) => f(s.docs.map(doiDoi)), () => f([]));
+}
+export async function vaoDoi(ma, toiDa) {
+  const d = await layDoi(ma);
+  if (!d) throw new Error('Không tìm thấy đội ' + ma + '. Kiểm tra lại mã đội.');
+  if (d.thanhVien.includes(uidToi())) return;
+  if (d.thanhVien.length >= toiDa) throw new Error(`Đội đã đủ ${toiDa} người.`);
+  try { await updateDoc(doc(fs, 'doi', ma), { thanhVien: arrayUnion(uidToi()) }); }
+  catch (e) { throw new Error('Chưa vào được đội. Hãy thử lại.'); }
+}
+export async function roiDoi(ma) {
+  const d = await layDoi(ma);
+  if (d?.truong === uidToi()) throw new Error('Đội trưởng không rời đội được. Bạn có thể giải tán đội.');
+  await updateDoc(doc(fs, 'doi', ma), { thanhVien: arrayRemove(uidToi()), ['mon.' + uidToi()]: deleteField() });
+}
+export async function boKhoiDoi(ma, uid) {
+  try { await updateDoc(doc(fs, 'doi', ma), { thanhVien: arrayRemove(uid), ['mon.' + uid]: deleteField() }); }
+  catch (e) { throw new Error('Chỉ đội trưởng mới làm được việc này.'); }
+}
+export async function doiTenDoi(ma, ten) {
+  try { await updateDoc(doc(fs, 'doi', ma), { ten: String(ten).slice(0, 30) }); }
+  catch (e) { throw new Error('Chỉ đội trưởng mới đổi được tên đội.'); }
+}
+export async function chonMonDoi(ma, mon) {
+  const d = await layDoi(ma);
+  if (!d?.thanhVien.includes(uidToi())) throw new Error('Bạn không còn ở trong đội này.');
+  if (mon && Object.entries(d.mon).some(([u, m]) => u !== uidToi() && m === mon)) throw new Error('Môn này đã có bạn khác trong đội chọn.');
+  await updateDoc(doc(fs, 'doi', ma), { ['mon.' + uidToi()]: mon || deleteField() });
+}
+export async function giaiTanDoi(ma) {
+  try { await deleteDoc(doc(fs, 'doi', ma)); }
+  catch (e) { throw new Error('Chỉ đội trưởng mới giải tán được đội.'); }
+}
+
+/* ---------- Phòng thi (Realtime Database: thiDau/{kỳ}/{mã đội}) — xem mô tả ở local.js ---------- */
+const rt = (ky, doi, duong = '') => ref(db, `thiDau/${ky}/${doi}${duong ? '/' + duong : ''}`);
+const mangSangObj = (x) => Object.fromEntries(Object.entries(x || {}).filter(([, v]) => v !== null && v !== undefined));
+function chuanTran(t) {
+  if (!t) return null;
+  return { ...t, mat: mangSangObj(t.mat), traLoi: mangSangObj(t.traLoi), phan: Object.values(t.phan || {}), cau: Object.values(t.cau || {}) };
+}
+export async function moTran(ky, doi, tran) {
+  const s = await get(rt(ky, doi));
+  if (s.exists()) return chuanTran(s.val());
+  await set(rt(ky, doi), { ...tran, ky, maDoi: doi, truong: uidToi(), batDauLuc: 0, xong: false });
+  return chuanTran((await get(rt(ky, doi))).val());
+}
+export async function layTran(ky, doi) { return chuanTran((await get(rt(ky, doi))).val()); }
+export function theoDoiTran(ky, doi, f) {
+  return onValue(rt(ky, doi), (s) => f(chuanTran(s.val())), () => f(null));
+}
+export function coMatTran(ky, doi) {
+  const r = rt(ky, doi, 'mat/' + uidToi());
+  set(r, rTs()).then(() => onDisconnect(r).remove()).catch(() => {});
+  return () => { onDisconnect(r).cancel().catch(() => {}); remove(r).catch(() => {}); };
+}
+export async function batDauTran(ky, doi) { await set(rt(ky, doi, 'batDauLuc'), rTs()); }
+export async function huyTran(ky, doi) { await remove(rt(ky, doi)).catch(() => {}); }
+export async function traLoiTran(ky, doi, i, chon) {
+  await set(rt(ky, doi, 'traLoi/' + i), { chon, luc: rTs() }).catch(() => {}); // đã có người trả lời / hết lượt thì bỏ qua
+}
+export async function xongTran(ky, doi) { await set(rt(ky, doi, 'xong'), true).catch(() => {}); }
+
+/* ---------- Kết quả thi đấu (Firestore: ketQuaThi/{kỳ_mã đội}) — chỉ ghi một lần ---------- */
+export async function ghiKetQua(kq) {
+  const r = doc(fs, 'ketQuaThi', kq.ky + '_' + kq.maDoi);
+  try { await setDoc(r, { ...kq, luc: serverTimestamp() }); }
+  catch (e) { /* đồng đội đã ghi trước */ }
+  const s = await getDoc(r).catch(() => null);
+  return s?.exists() ? { ...s.data(), luc: doiLuc(s.data().luc) } : null;
+}
+export async function dsKetQua(kys) {
+  const ds = [];
+  for (let i = 0; i < kys.length; i += 30) {
+    const s = await getDocs(query(collection(fs, 'ketQuaThi'), where('ky', 'in', kys.slice(i, i + 30))));
+    s.docs.forEach((d) => ds.push({ ...d.data(), luc: doiLuc(d.data().luc) }));
+  }
+  return ds;
 }

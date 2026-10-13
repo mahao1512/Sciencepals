@@ -168,6 +168,23 @@ main { max-width: 1240px; }
   border-radius: var(--r-md); padding: 6px; -webkit-overflow-scrolling: touch;
 }
 .de-khung img { display: block; max-width: none; height: auto; margin: 0 auto; background: #fff; box-shadow: var(--shadow-md); }
+/* Ghi chú của trưởng phòng: lớp vẽ phủ đúng lên ảnh trang đề */
+.de-trang { position: relative; margin: 0 auto; }
+.de-trang img { width: 100%; }
+.de-ghi-chu { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.de-khung.dang-ghi { outline: 3px solid var(--danger); outline-offset: -3px; }
+.de-khung.dang-ghi .de-ghi-chu { pointer-events: auto; touch-action: none; cursor: crosshair; }
+.de-ghi-thanh { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 8px; }
+.de-ghi-thanh .opt { min-height: 40px; }
+.de-ghi-thanh .swatch { width: 34px; height: 34px; }
+.de-ghi-tt:empty { display: none; }
+.de-ghi-tt { margin-bottom: 6px; font-weight: 600; }
+/* Chọn trưởng phòng mới */
+.chon-truong { display: grid; gap: 8px; margin-top: 12px; }
+.chon-truong .btn { justify-content: flex-start; text-align: left; gap: 12px; }
+.chon-truong small { display: block; font-weight: 500; color: var(--text-muted); }
+.ct-hinh { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--room-wall); border: 2px solid var(--border-strong); }
+.ct-hinh svg { width: 100%; height: 100%; display: block; }
 .soan-ds { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 .soan-ds li { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--surface-2); }
 .soan-ds img { display: block; width: 100%; height: 160px; object-fit: contain; background: #fff; }

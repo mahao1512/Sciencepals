@@ -43,6 +43,22 @@
  *   guiTin(ma, noiDung)         baoCao({ maPhong, tin, lyDo })
  *   themNet(ma, net)  xoaNet(ma, id)  xoaBang(ma)  — nét: { id, mau, co, tay, diem: [[x, y], ...] } (x, y: 0–1)
  *   gioMayChu() → ms            dieuKhienDongHo(ma, 'batDau'|'tamDung'|'datLai'|'datThoiLuong', phut)
+ *   chuyenTruongPhong(ma, uid)  — chỉ trưởng phòng hiện tại
+ *   Ghi chú trên đề (trưởng phòng vẽ, cả phòng xem): themGhiChu(ma, trang, nét)  xoaGhiChu(ma, trang, id?)
+ *                                                     theoDoiGhiChu(ma, f) — f({ trang: { id: nét } })
+ *
+ *   Uy tín: lần bị trừ = { den, muc, loai: 'toCao'|'vangTuc', ngay, luc } (không lưu người tố cáo)
+ *   toCao({ den, muc }) → { daTruTruoc }   ghiVangTuc(muc)   dsViPham(uid)   theoDoiViPham(uid, f)
+ *   Hồ sơ công khai có thêm uyTinCong (số điểm đã hồi), uyTinLuc (lần hồi gần nhất)
+ *
+ *   Đội thi đấu: { ma, ten, truong, thanhVien: [uid], mon: { uid: môn }, taoLuc }
+ *   taoDoi(ten) → mã   layDoi(ma)   doiCuaToi()   theoDoiDoiCuaToi(f)   vaoDoi(ma, toiDa)   roiDoi(ma)
+ *   boKhoiDoi(ma, uid)   doiTenDoi(ma, ten)   chonMonDoi(ma, mon)   giaiTanDoi(ma)
+ *   Phòng thi: { ky, maDoi, ten, truong, thanhVien: { uid: { ten, mon } }, phan: [uid], cau: [{ mon, id, hoanVi }],
+ *                hanMs, nghiMs, batDauLuc, mat: { uid }, traLoi: { i: { chon, luc } }, xong }
+ *   moTran(ky, doi, tran)  layTran  theoDoiTran(ky, doi, f)  coMatTran(ky, doi) → hàm rời
+ *   batDauTran  huyTran  traLoiTran(ky, doi, i, chon)  xongTran
+ *   Kết quả: ghiKetQua(kq)  dsKetQua([kỳ])
  */
 import { firebaseConfig } from '../firebase-config.js';
 

@@ -72,6 +72,32 @@ a.pill-room, :root.dark a.pill-room { color: var(--ink); }
 .hanh-dong .hd-nut:nth-child(2) { background: var(--success); }
 .hanh-dong .hd-nut:nth-child(3) { background: var(--coral); }
 .hanh-dong .hd-nut:hover { filter: brightness(1.08); }
+/* Hàng 2: bài test tuần, Thi Đấu, uy tín */
+.hanh-dong-2 .hd-nut:nth-child(n) { background: var(--surface); color: var(--text); border: 2px solid var(--border-strong); }
+.hanh-dong-2 .hd-nut i { color: var(--brand-600); }
+.hanh-dong-2 .hd-thi-dau i { color: var(--star); }
+.hanh-dong-2 .hd-thi-dau.dang-mo { border-color: #16a34a; }
+.hanh-dong-2 .hd-uy-tin { cursor: default; }
+.hanh-dong-2 .hd-uy-tin:hover { filter: none; }
+.hanh-dong-2 .hd-uy-tin.ut-thap { border-color: var(--danger); }
+.hanh-dong-2 .hd-uy-tin.ut-thap i, .hanh-dong-2 .hd-uy-tin.ut-thap small { color: var(--danger); }
+.hanh-dong-2 .hd-uy-tin.ut-tot i { color: #16a34a; }
+/* Bảng vàng trên trang chủ (kiểu chi tiết trong thi-dau.css) */
+.bang-vang-chu h2 { font-size: 1.15rem; }
+.bv-luoi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+.bv-ky { padding: 12px; border-radius: var(--r-lg); background: linear-gradient(160deg, #fef9c3, #fde68a); color: #713f12; }
+:root.dark .bv-ky { background: linear-gradient(160deg, #422006, #713f12); color: #fef3c7; }
+.bv-ky h3 { font-size: 1rem; color: inherit; margin-bottom: 6px; }
+.bv-ds { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.bv-ds li { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, .6); border-radius: var(--r-md); padding: 6px 8px; }
+:root.dark .bv-ds li { background: rgba(0, 0, 0, .25); }
+.bv-huy { font-size: 1.3rem; }
+.bv-ten { flex: 1; min-width: 0; display: grid; line-height: 1.25; }
+.bv-ten small { font-size: .72rem; opacity: .85; overflow: hidden; text-overflow: ellipsis; }
+.bv-diem { font-weight: 800; white-space: nowrap; }
+.bv-diem small { font-weight: 600; font-size: .7rem; }
+.bv-ky .muted { color: inherit; opacity: .8; }
+@media (max-width: 760px) { .bv-luoi { grid-template-columns: 1fr; } }
 
 /* Cửa sổ tạo phòng */
 .lua-chon-phong { display: grid; gap: 10px; }

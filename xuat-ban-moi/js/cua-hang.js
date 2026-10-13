@@ -44,8 +44,8 @@ function hinh(quay, mon) {
 const lopHinh = (quay) => ({ ban: '', tuong: 'tuong', ke: 'ke' }[quay] ?? 'nv');
 const LOI_MUA = {
   ban: 'Bàn mới đã xuất hiện ở trang chủ và trong mọi phòng học.',
-  tuong: 'Phòng học ở trang chủ đã đổi tường. Khi làm chủ phòng chung, bạn cũng dùng được tường này.',
-  ke: 'Tủ sách ở trang chủ đã đổi kiểu. Khi làm chủ phòng chung, bạn cũng dùng được kệ này.'
+  tuong: 'Phòng học ở trang chủ đã đổi tường. Khi làm trưởng phòng chung, bạn cũng dùng được tường này.',
+  ke: 'Tủ sách ở trang chủ đã đổi kiểu. Khi làm trưởng phòng chung, bạn cũng dùng được kệ này.'
 };
 
 function veQuay(quay) {

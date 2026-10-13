@@ -2,9 +2,11 @@
  * phong-cua-toi.js — Trang chủ là một phòng học: bàn học bên trái, nhân vật ở giữa, tủ sách bên phải.
  * Bấm bàn → cửa hàng, bấm nhân vật → "Nhân vật của tôi", bấm sách → trò chơi của môn (tab mới).
  */
+import { duLieu } from '../data/index.js';
 import { esc, taiJSON, thongBao, moCuaSo } from '../tienich.js';
 import { moNhanVatCuaToi, htmlChuoi } from '../khung.js';
-import { CHUOI_HIEN_LUA } from '../config.js';
+import { mucUyTin } from '../uy-tin.js';
+import { CHUOI_HIEN_LUA, GIO_HOI_UY_TIN } from '../config.js';
 
 let monHocCache = null;
 /** Danh sách môn của tủ sách (data/mon-hoc.json). */
@@ -47,7 +49,13 @@ export async function veTrangChu(el, ctx) {
     `<a class="btn btn-primary hd-nut" href="tim-ban.html"><i class="fas fa-user-group" aria-hidden="true"></i><span>Tìm bạn học<small>Bạn giỏi môn bạn cần</small></span></a>` +
     `<button type="button" class="btn btn-primary hd-nut" id="nut-hoc-doi"><i class="fas fa-people-arrows" aria-hidden="true"></i><span>Học cùng bạn<small>Phòng 2 người</small></span></button>` +
     `<button type="button" class="btn btn-primary hd-nut" id="nut-hoc-nhom"><i class="fas fa-people-group" aria-hidden="true"></i><span>Học nhóm<small>Phòng 2–8 người</small></span></button>` +
-    `</nav>`;
+    `</nav>` +
+    `<nav class="hanh-dong hanh-dong-2" aria-label="Kiểm tra và thi đấu">` +
+    `<a class="btn btn-secondary hd-nut" href="kiem-tra-tuan.html"><i class="fas fa-chart-line" aria-hidden="true"></i><span>Bài test tuần<small id="hd-test-tuan">Học cùng bạn có hiệu quả không?</small></span></a>` +
+    `<a class="btn btn-secondary hd-nut hd-thi-dau" href="thi-dau.html"><i class="fas fa-trophy" aria-hidden="true"></i><span>Thi Đấu<small id="hd-thi-dau-tt">Mở vào cuối tuần</small></span></a>` +
+    `<span class="btn btn-secondary hd-nut hd-uy-tin" id="hd-uy-tin-o" title="Uy tín: bị tố cáo hoặc văng tục thì bị trừ; học ${GIO_HOI_UY_TIN} giờ liên tiếp lịch sự thì hồi 1 điểm"><i class="fas fa-shield-halved" aria-hidden="true"></i><span>Uy tín <b id="hd-uy-tin-so">${ctx.uyTin?.diem ?? 100}</b>/100<small id="hd-uy-tin-chu"></small></span></span>` +
+    `</nav>` +
+    `<section class="card bang-vang-chu" id="bang-vang-chu" aria-labelledby="bvc-td" hidden></section>`;
 
   if (ctx.chuoiVuaTang && r.chuoi >= CHUOI_HIEN_LUA) el.querySelector('#hud-chuoi').classList.add('flame-pop');
 
@@ -59,6 +67,42 @@ export async function veTrangChu(el, ctx) {
 
   el.querySelector('#nut-hoc-doi').addEventListener('click', async () => (await import('./tao-phong.js')).moHocDoi(ctx));
   el.querySelector('#nut-hoc-nhom').addEventListener('click', async () => (await import('./tao-phong.js')).moHocNhom(ctx));
+
+  // Uy tín, bài test tuần, Thi Đấu, bảng vàng
+  const veUyTin = () => {
+    const d = ctx.uyTin?.diem ?? 100;
+    el.querySelector('#hd-uy-tin-so').textContent = d;
+    el.querySelector('#hd-uy-tin-chu').textContent = mucUyTin(d).chu;
+    el.querySelector('#hd-uy-tin-o').className = 'btn btn-secondary hd-nut hd-uy-tin ' + mucUyTin(d).lop;
+  };
+  veUyTin();
+  document.addEventListener('pl:uytin', veUyTin);
+  try {
+    const { ngayVN, ngayCong } = await import('../tienich.js');
+    const hom = ngayVN(new Date(duLieu.gioMayChu()));
+    const [y, m, d] = hom.split('-').map(Number);
+    const thuHai = ngayCong(hom, -((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7));
+    if (ctx.rieng.testTuan?.[thuHai]) el.querySelector('#hd-test-tuan').textContent = '✅ Tuần này đã làm';
+    else if (ck.diem) el.querySelector('#hd-test-tuan').textContent = '📌 Tuần này chưa làm';
+  } catch (e) { /* bỏ qua */ }
+  import('../lich-thi.js').then(({ kyDangMo }) => {
+    const mo = kyDangMo(duLieu.gioMayChu());
+    if (mo.length) {
+      el.querySelector('#hd-thi-dau-tt').textContent = '🟢 Đang mở: ' + mo.map((k) => k.ten).join(', ');
+      el.querySelector('.hd-thi-dau').classList.add('dang-mo');
+    }
+  });
+  import('../thi-dau-chung.js').then(async ({ layBangVang, htmlBangVang, nhanGiaiConLai }) => {
+    nhanGiaiConLai(ctx);
+    const bv = await layBangVang();
+    if (!bv.some((x) => x.top.length)) return; // chưa có kì nào có kết quả thì chưa hiện bảng vàng
+    const { taiNganHang } = await import('../ngan-hang.js');
+    const nh = await taiNganHang();
+    const o = el.querySelector('#bang-vang-chu');
+    o.innerHTML = `<h2 id="bvc-td">🏅 Bảng vàng Thi Đấu</h2>` + htmlBangVang(bv, nh.tenMon, { gon: true }) +
+      `<p class="small" style="margin-top:8px"><a href="thi-dau.html">Xem lịch thi và lập đội →</a></p>`;
+    o.hidden = false;
+  }).catch(() => {});
 
   // Tủ sách
   const tu = el.querySelector('#tu-sach');

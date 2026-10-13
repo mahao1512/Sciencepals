@@ -12,6 +12,7 @@ import { ganDeBai } from './ui/de-bai.js';
 import { htmlNutKetBan } from './ban-be-chung.js';
 import { ganGoiVideo } from './ui/goi-video.js';
 import { ganTrangTriPhong } from './ui/trang-tri-phong.js';
+import { xetVangTuc, toCaoBan, hoiUyTin, UY_TIN_GOC } from './uy-tin.js';
 import { PHUT_MOI_LAN_THUONG, DIEM_MOI_LAN_THUONG } from './config.js';
 
 const $ = (s) => document.querySelector(s);
@@ -94,7 +95,7 @@ function veCho() {
     const tt = TRANG_THAI[tv.trangThai] || '';
     return `<figure class="cho${toi ? ' la-toi' : ''}" aria-label="Ghế ${i + 1}: ${esc(tv.ten)}${toi ? ' (bạn)' : ''}, ${manh}, trạng thái ${tt.toLowerCase()}">` +
       PeerAssets.renderSeat({ character: nv, deskId: tv.ban }) +
-      `<figcaption><b>${uid === p.chuPhong ? '<span title="Chủ phòng" aria-hidden="true">👑 </span>' : ''}${esc(tv.ten)}${toi ? ' (bạn)' : ''}</b>` +
+      `<figcaption><b>${uid === p.chuPhong ? '<span title="Trưởng phòng" aria-hidden="true">👑 </span><span class="sr-only">Trưởng phòng </span>' : ''}${esc(tv.ten)}${toi ? ' (bạn)' : ''}</b>` +
       `<span>${manh}</span><span class="cho-tt">${BIEU_TUONG[tv.trangThai] || ''} ${esc(tt)}${p.goi?.thamGia?.[uid] ? ' · 📹' : ''}</span>` +
       (!toi && ctx.banBe && !String(uid).startsWith('mau_') ? `<span class="cho-kb">${htmlNutKetBan(ctx.banBe.trangThai(uid), uid, { nho: true })}</span>` : '') +
       `</figcaption></figure>`;
@@ -112,6 +113,36 @@ $('#p-cho').addEventListener('click', async (e) => {
   } catch (err) { kb.disabled = false; thongBao(esc(err.message), { loai: 'err' }); }
 });
 ctx.banBe?.nghe(() => { if (phong) veCho(); });
+
+/* ---------- Chuyển quyền trưởng phòng (đổi bạn dạy học) ---------- */
+$('#p-chuyen-truong').addEventListener('click', () => {
+  if (!laChu()) return thongBao('Chỉ trưởng phòng mới chuyển quyền được.');
+  const khac = Object.entries(phong.thanhVien).filter(([uid]) => uid !== ctx.uid);
+  if (!khac.length) return thongBao('Chưa có bạn nào khác trong phòng để nhận quyền trưởng phòng.');
+  const cs = moCuaSo(
+    `<p>Trưởng phòng là người <b>dạy học</b>: điều khiển đồng hồ, đưa đề lên, duyệt đề và ghi chú trực tiếp trên đề. ` +
+    `Chọn bạn sẽ dạy tiếp:</p>` +
+    `<div class="chon-truong">` + khac.map(([uid, tv]) =>
+      `<button type="button" class="btn btn-secondary" data-truong="${esc(uid)}"><span class="ct-hinh" aria-hidden="true">${PeerAssets.renderCharacter(tv.nhanVat).replace('viewBox="0 0 200 320"', 'viewBox="24 24 152 152"')}</span>` +
+      `<span>${esc(tv.ten)}${tv.monManh ? `<small>Mạnh nhất: ${esc(tenMon[tv.monManh] || tv.monManh)}</small>` : ''}</span></button>`).join('') +
+    `</div>`, { tieuDe: 'Chuyển trưởng phòng' });
+  cs.querySelectorAll('[data-truong]').forEach((b) => b.addEventListener('click', async () => {
+    try {
+      await duLieu.chuyenTruongPhong(ma, b.dataset.truong);
+      cs.close();
+      thongBao(`Đã chuyển quyền trưởng phòng cho <b>${esc(phong.thanhVien[b.dataset.truong]?.ten || 'bạn ấy')}</b>.`, { loai: 'ok' });
+    } catch (e) { thongBao(esc(e.message), { loai: 'err' }); }
+  }));
+});
+let chuTruoc = null;
+function baoDoiTruong() {
+  const chu = phong.chuPhong;
+  if (chuTruoc && chu !== chuTruoc && chu === ctx.uid) {
+    thongBao('👑 Bạn vừa trở thành <b>trưởng phòng</b>: bạn điều khiển đồng hồ, đưa đề lên và ghi chú trực tiếp trên đề cho cả phòng.', { loai: 'ok', thoiGian: 7000 });
+  }
+  chuTruoc = chu;
+  $('#p-chuyen-truong').hidden = !laChu() || Object.keys(phong.thanhVien).length < 2;
+}
 
 // Chọn trạng thái → nhân vật đổi biểu cảm
 $('#p-tt').innerHTML = Object.entries(TRANG_THAI).map(([id, ten]) =>
@@ -154,7 +185,7 @@ function veDongHo() {
   nut.innerHTML = d.dangChay ? '<i class="fas fa-pause" aria-hidden="true"></i> Tạm dừng' : '<i class="fas fa-play" aria-hidden="true"></i> Bắt đầu';
   nut.disabled = !d.dangChay && ms === 0;
   document.querySelectorAll('#dh-dk [data-phut]').forEach((b) => b.setAttribute('aria-pressed', String(d.thoiLuongMs === Number(b.dataset.phut) * 60000)));
-  // Hết giờ: báo một lần; chủ phòng dừng đồng hồ trên máy chủ
+  // Hết giờ: báo một lần; trưởng phòng dừng đồng hồ trên máy chủ
   if (d.dangChay && ms === 0) {
     if (!daBaoHetGio) { daBaoHetGio = true; thongBao('⏰ Hết giờ! Cả phòng nghỉ giải lao một chút nhé.', { loai: 'ok' }); }
     if (chu) duLieu.dieuKhienDongHo(ma, 'tamDung');
@@ -204,8 +235,10 @@ $('#tin-gui').addEventListener('submit', async (e) => {
   const nd = o.value.trim();
   if (!nd) return;
   o.value = '';
-  try { await duLieu.guiTin(ma, locTu(nd).slice(0, 300)); }
-  catch (err) { o.value = nd; thongBao('Chưa gửi được: ' + esc(err.message), { loai: 'err' }); }
+  try {
+    await duLieu.guiTin(ma, locTu(nd).slice(0, 300));
+    xetVangTuc(nd); // văng tục: tin đã bị che, người gửi bị trừ uy tín
+  } catch (err) { o.value = nd; thongBao('Chưa gửi được: ' + esc(err.message), { loai: 'err' }); }
 });
 $('#tin-ds').addEventListener('click', (e) => {
   const nut = e.target.closest('.tin-bao');
@@ -216,15 +249,18 @@ $('#tin-ds').addEventListener('click', (e) => {
     `<p>Tin nhắn của <b>${esc(t.ten)}</b> lúc ${gioVN(t.luc)}:</p><blockquote class="bc-tin">${esc(locTu(t.noiDung))}</blockquote>` +
     `<label class="field"><span>Lí do (không bắt buộc)</span><select class="input" id="bc-ly-do">` +
     `<option value="">Chọn lí do…</option><option>Nói tục, xúc phạm</option><option>Bắt nạt, đe doạ</option><option>Làm phiền, spam</option><option>Xin thông tin cá nhân</option><option>Khác</option></select></label>` +
-    `<p class="small muted" style="margin-top:8px">Tin nhắn sẽ được lưu lại để thầy cô xem. Bạn ấy không biết ai đã báo cáo.</p>` +
+    `<p class="small muted" style="margin-top:8px">Tin nhắn sẽ được lưu lại để thầy cô xem. Bạn ấy bị trừ 5–10 uy tín (lí do nặng trừ nhiều hơn) nhưng không biết ai đã báo cáo. Mỗi ngày bạn chỉ trừ uy tín một bạn một lần.</p>` +
     `<div class="row" style="margin-top:14px"><button class="btn btn-danger" id="bc-gui">Gửi báo cáo</button><button class="btn btn-secondary" id="bc-huy">Huỷ</button></div>`,
     { tieuDe: 'Báo cáo tin nhắn' });
   cs.querySelector('#bc-huy').addEventListener('click', () => cs.close());
   cs.querySelector('#bc-gui').addEventListener('click', async () => {
+    const lyDo = cs.querySelector('#bc-ly-do').value;
     try {
-      await duLieu.baoCao({ maPhong: ma, tin: { id: t.id, uid: t.uid, ten: t.ten, noiDung: t.noiDung, luc: t.luc }, lyDo: cs.querySelector('#bc-ly-do').value });
+      await duLieu.baoCao({ maPhong: ma, tin: { id: t.id, uid: t.uid, ten: t.ten, noiDung: t.noiDung, luc: t.luc }, lyDo });
       cs.close();
-      thongBao('Đã gửi báo cáo. Cảm ơn bạn đã giúp phòng học an toàn hơn.', { loai: 'ok' });
+      const kq = await toCaoBan(t.uid, lyDo).catch(() => ({ daTruTruoc: true }));
+      thongBao('Đã gửi báo cáo. Cảm ơn bạn đã giúp phòng học an toàn hơn.' +
+        (kq.daTruTruoc ? ' (Hôm nay bạn đã trừ uy tín bạn này rồi nên lần này không trừ thêm.)' : ''), { loai: 'ok' });
     } catch (err) { thongBao('Chưa gửi được báo cáo: ' + esc(err.message), { loai: 'err' }); }
   });
 });
@@ -329,6 +365,7 @@ tabs.forEach((t) => {
  */
 let lanDem = duLieu.gioMayChu(); // mốc (giờ máy chủ) đã tính tới
 let msCho = 0; // đã học nhưng chưa ghi
+let banCho = {}; // học cùng ai trong phần chưa ghi: { uid: { ten, mon, ms } } — cho bài test tuần
 let dangGhi = false;
 function dangTinhGio() {
   return Boolean(phong?.thanhVien?.[ctx.uid] && phong.dongHo?.dangChay && conLaiMs() > 0);
@@ -342,7 +379,14 @@ function demGio() {
     // Máy ngủ / mất mạng quá 5 phút thì phần trống đó không được tính
     const tu = Math.max(lanDem, d.batDauLuc, bay - 5 * 60 * 1000);
     const den = Math.min(bay, ketThuc);
-    if (den > tu) msCho += den - tu;
+    if (den > tu) {
+      msCho += den - tu;
+      Object.entries(phong.thanhVien).forEach(([uid, tv]) => {
+        if (uid === ctx.uid || String(uid).startsWith('mau_')) return;
+        const b = banCho[uid] || (banCho[uid] = { ten: tv.ten, mon: tv.monManh || '', ms: 0 });
+        b.ms += den - tu;
+      });
+    }
   }
   lanDem = bay;
   veTienDoHoc();
@@ -351,10 +395,17 @@ async function ghiGio() {
   if (dangGhi || msCho < 1000) return;
   dangGhi = true;
   const ms = msCho;
+  const banHoc = banCho;
   msCho = 0;
+  banCho = {};
   try {
-    const { rieng, thuong } = await congThoiGianHoc(ms);
+    const { rieng, thuong, duHoiUyTin } = await congThoiGianHoc(ms, {
+      banHoc,
+      viPhamCuoi: ctx.uyTin?.viPhamCuoi || 0,
+      coTheHoiUyTin: (ctx.uyTin?.diem ?? UY_TIN_GOC) < UY_TIN_GOC
+    });
     ctx.rieng = rieng;
+    if (duHoiUyTin) hoiUyTin(ctx);
     if (thuong) {
       thongBao(`🎉 Chúc mừng! Bạn đã học đủ ${PHUT_MOI_LAN_THUONG} phút và nhận <b>${DIEM_MOI_LAN_THUONG} điểm chăm chỉ</b>. Ghé cửa hàng đổi quà nhé!`, {
         loai: 'ok', nut: [{ chu: 'Mở cửa hàng', kieu: 'btn-secondary', bam: () => window.open('cua-hang.html', '_blank') }, { chu: 'Học tiếp' }]
@@ -362,6 +413,10 @@ async function ghiGio() {
     }
   } catch (e) {
     msCho += ms; // thử lại lần sau
+    Object.entries(banHoc).forEach(([uid, b]) => {
+      const c = banCho[uid] || (banCho[uid] = { ...b, ms: 0 });
+      c.ms += b.ms;
+    });
   } finally {
     dangGhi = false;
     veTienDoHoc();
@@ -387,6 +442,7 @@ if (duLieu.cheDo === 'local') window.plThuHoc = (phut) => { msCho += phut * 6000
 
 /* ---------- Theo dõi phòng ---------- */
 function veTatCa() {
+  baoDoiTruong();
   veCho();
   veDongHo();
   veTin();

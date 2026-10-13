@@ -36,3 +36,31 @@ export const DE_MON_MAX = 7;
 // Đề bài chung trong phòng: số trang tối đa mỗi đề, cạnh dài nhất của ảnh sau khi nén (điểm ảnh)
 export const DE_TOI_DA_TRANG = 10;
 export const DE_CANH_DAI = 1600;
+
+// Uy tín: điểm ban đầu, mức tối thiểu để vào Thi Đấu, số giờ học "sạch" liên tiếp để hồi 1 điểm
+export const UY_TIN_GOC = 100;
+export const UY_TIN_THI_DAU = 70;
+export const GIO_HOI_UY_TIN = 3;
+// Mức trừ: bị tố cáo vì lí do nặng (nói tục, bắt nạt, xin thông tin cá nhân) / lí do khác; văng tục 1 từ / từ 2 từ trở lên
+export const TRU_TO_CAO_NANG = 10;
+export const TRU_TO_CAO_NHE = 5;
+export const TRU_VANG_TUC = 5;
+export const TRU_VANG_TUC_NANG = 10;
+
+// Bài test tuần: số câu mỗi môn, số môn tối đa, học cùng bạn ít nhất bao nhiêu phút trong 7 ngày thì tính môn của bạn ấy
+export const TEST_TUAN_SO_CAU = 10;
+export const TEST_TUAN_MON_MAX = 7;
+export const TEST_TUAN_PHUT_HOC_CUNG = 10;
+
+// Thi Đấu: số thành viên mỗi đội (= số môn thi), số câu mỗi môn, thời gian mỗi câu, thời gian xem đáp án giữa hai câu
+export const DOI_MIN = 3;
+export const DOI_MAX = 7;
+export const THI_SO_CAU_MOI_MON = 5;
+export const THI_GIAY_MOI_CAU = 45;
+export const THI_GIAY_NGHI = 4;
+// Ngôi sao thưởng mỗi thành viên cho hạng Nhất / Nhì / Ba
+export const GIAI_THUONG = {
+  tuan: [80, 50, 20],
+  thang: [140, 100, 60],
+  quy: [200, 150, 100]
+};
