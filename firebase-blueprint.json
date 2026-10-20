@@ -1,0 +1,119 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with game progress and statistics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "maxLength": 20, "description": "Display name" },
+        "className": { "type": "string", "maxLength": 10, "description": "School class" },
+        "avatar": { "type": "string", "description": "Selected animal avatar identifier" },
+        "friendCode": { "type": "string", "maxLength": 6, "minLength": 6, "pattern": "^[A-Z0-9]{6}$", "description": "Unique 6-character friend code" },
+        "xp": { "type": "number", "description": "Experience points" },
+        "rank": { "type": "string", "enum": ["Tập sự", "Lữ khách", "Hướng dẫn viên", "Nhà thám hiểm", "Chuyên gia Địa lí"], "description": "Player title" },
+        "currentStreak": { "type": "number", "description": "Consecutive days completed" },
+        "lastDailyCompletedDate": { "type": "string", "description": "Last date daily quest was completed YYYY-MM-DD" },
+        "unlockedStage": { "type": "number", "description": "Highest unlocked stage (1-20)" },
+        "stageMedals": { "type": "object", "description": "Medal per stage (dong, bac, vang)" },
+        "regionStamps": { "type": "object", "description": "Stamps collected for 7 regions" },
+        "domainStats": { "type": "object", "description": "Statistics by geography knowledge domain" },
+        "weeklyXp": { "type": "number", "description": "XP earned in current week" },
+        "weeklyResetWeek": { "type": "string", "description": "Current week tag e.g. 2026-W41" },
+        "badges": { "type": "array", "description": "Unlocked achievement badges" },
+        "completedQuestions": { "type": "object", "description": "Map of questions answered correctly" },
+        "wrongQuestions": { "type": "object", "description": "Map of wrong question attempts" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["uid", "name", "className", "avatar", "friendCode", "xp", "rank"]
+    },
+    "FriendCode": {
+      "title": "FriendCode",
+      "description": "Index for unique friend codes mapping to player public info",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "User UID" },
+        "name": { "type": "string", "description": "Display name" },
+        "avatar": { "type": "string", "description": "Avatar ID" }
+      },
+      "required": ["uid", "name", "avatar"]
+    },
+    "Friendship": {
+      "title": "Friendship",
+      "description": "Friend item inside user's friends list",
+      "type": "object",
+      "properties": {
+        "friendUid": { "type": "string", "description": "Friend's user UID" },
+        "name": { "type": "string", "description": "Friend's display name" },
+        "avatar": { "type": "string", "description": "Friend's avatar" },
+        "friendCode": { "type": "string", "description": "Friend's code" },
+        "addedAt": { "type": "number", "description": "Timestamp when added" }
+      },
+      "required": ["friendUid", "name", "avatar"]
+    },
+    "GameRoom": {
+      "title": "GameRoom",
+      "description": "Multiplayer real-time quiz game room",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 6, "description": "6-character room code" },
+        "hostUid": { "type": "string", "description": "Host player UID" },
+        "hostName": { "type": "string", "description": "Host player display name" },
+        "mode": { "type": "string", "enum": ["region", "xuyen_viet"], "description": "Game scope" },
+        "regionId": { "type": "number", "description": "Region ID if mode is region" },
+        "questionCount": { "type": "number", "description": "10, 15 or 20 questions" },
+        "isSpectatorHost": { "type": "boolean", "description": "Whether host is teacher/spectator" },
+        "status": { "type": "string", "enum": ["waiting", "in_progress", "ended"], "description": "Room state" },
+        "currentQuestionIndex": { "type": "number", "description": "Active question index" },
+        "questionStartTime": { "type": "number", "description": "Server timestamp of current question start" },
+        "questions": { "type": "array", "description": "List of questions for the room" },
+        "playerCount": { "type": "number", "description": "Number of players joined" },
+        "reactions": { "type": "array", "description": "Recent emoji reactions" },
+        "createdAt": { "type": "number", "description": "Room creation time" },
+        "updatedAt": { "type": "number", "description": "Last updated time" }
+      },
+      "required": ["id", "hostUid", "hostName", "mode", "questionCount", "status"]
+    },
+    "RoomPlayer": {
+      "title": "RoomPlayer",
+      "description": "Participant in a multiplayer room",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Player UID" },
+        "name": { "type": "string", "description": "Display name" },
+        "avatar": { "type": "string", "description": "Avatar ID" },
+        "score": { "type": "number", "description": "Accumulated score" },
+        "answeredCurrent": { "type": "boolean", "description": "Whether answered current question" },
+        "lastAnswerCorrect": { "type": "boolean", "description": "Whether last answer was correct" },
+        "speedBonus": { "type": "number", "description": "Speed bonus earned in last answer" },
+        "isHost": { "type": "boolean", "description": "Whether player is host" },
+        "isSpectator": { "type": "boolean", "description": "Whether observing only" },
+        "joinedAt": { "type": "number", "description": "Join timestamp" }
+      },
+      "required": ["uid", "name", "avatar", "score"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile, progression and game records"
+    },
+    "/friendCodes/{code}": {
+      "schema": "FriendCode",
+      "description": "Unique friend code directory"
+    },
+    "/users/{userId}/friends/{friendId}": {
+      "schema": "Friendship",
+      "description": "User's friends collection"
+    },
+    "/gameRooms/{roomId}": {
+      "schema": "GameRoom",
+      "description": "Live multiplayer quiz room document"
+    },
+    "/gameRooms/{roomId}/players/{playerId}": {
+      "schema": "RoomPlayer",
+      "description": "Player progress in a multiplayer room"
+    }
+  }
+}

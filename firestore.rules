@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection test document
+    match /test/connection {
+      allow read, write: if true;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Authenticated users can read public user stats (no PII/email is stored in users)
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+
+      // Friends subcollection
+      match /friends/{friendId} {
+        allow read: if isOwner(userId) || (isSignedIn() && request.auth.uid == friendId);
+        allow create, update: if isOwner(userId) || (isSignedIn() && request.auth.uid == friendId);
+        allow delete: if isOwner(userId) || (isSignedIn() && request.auth.uid == friendId);
+      }
+    }
+
+    // Friend code lookup
+    match /friendCodes/{code} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Multiplayer Game Rooms
+    match /gameRooms/{roomId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.hostUid == request.auth.uid;
+      // Host updates room state/questions, players can submit reactions or host migration
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn() && resource.data.hostUid == request.auth.uid;
+
+      match /players/{playerId} {
+        allow read: if isSignedIn();
+        // Each player can only create/update their own score and answer status
+        allow create, update: if isSignedIn() && request.auth.uid == playerId;
+        allow delete: if isSignedIn() && (request.auth.uid == playerId || get(/databases/$(database)/documents/gameRooms/$(roomId)).data.hostUid == request.auth.uid);
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Remix Hành trình xuyên Việt",
+  "description": "Trò chơi web ôn tập môn Địa lí 12 cùng bé Sao La qua 7 vùng địa lí Việt Nam",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
